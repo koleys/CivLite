@@ -1,0 +1,34 @@
+# OpenCode
+.opencode/
+
+# VSCode
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Visual Studio
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+*.cache
+*.dbmdl
+*.dbproj.schemaview
+*.jfm
+*.pfx
+*.publishsettings
+node_modules/
+bin/
+obj/
+publish/
+
+# General
+*.log
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
