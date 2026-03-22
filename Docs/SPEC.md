@@ -1,4 +1,4 @@
-# CIVLite - Browser-Based Civilization VII Clone
+# CivLite - Browser-Based Civilization VII Clone
 
 ## Project Requirements Document
 
@@ -7,7 +7,7 @@
 ## 1. Project Overview
 
 ### 1.1 Project Name
-**CIVLite** - A browser-based 4X strategy game inspired by Civilization VII
+**CivLite** - A browser-based 4X strategy game inspired by Civilization VII
 
 ### 1.2 Project Vision
 A fully-playable Civilization VII-inspired strategy game that runs entirely in modern web browsers, featuring the signature three-age system, legacy paths, turn-based empire building, and multiplayer capabilities. Optimized for lite hardware (integrated graphics, <4GB RAM).
@@ -57,25 +57,26 @@ The game is divided into three distinct ages, each representing a major era of h
   6. India (Faith bonus, Varu unique)
   7. Babylon (Science bonus, Bowman unique)
   8. Carthage (Trade bonus, Quadrireme unique)
-  9. Celts (Faith/Production, Picts unique)
-  10. Harappa (Food/Production, Indus River bonus)
+  9. Celts (Faith/Production bonus, Picts unique unit)
+  10. Harappa (Food/Production bonus, River bonus)
 - **Legacy Path Objectives** (select 3 of 5):
   1. Construct 3 Wonders
   2. Reach 10 population in capital
   3. Establish 5 trade routes
   4. Research 5 technologies
   5. Control 8+ cities
+- **Transition**: Requires completing at least 2 Legacy Path objectives for voluntary early transition. Voluntary early transition with 2+ completed objectives incurs no penalty. If forced transition by turn limit occurs with fewer than 2 objectives completed, the game auto-selects the 2 most advanced from available progress, applies a -20 Era Score penalty, and the player continues into the next age without Age Victory.
 
 #### 2.1.2 Exploration Age
 - **Time Period**: 1 CE - 1500 CE
-- **Transition**: Requires completing at least 2 Legacy Path objectives for voluntary early transition. Players may voluntarily trigger the age transition at any time after achieving 2 objectives. **Turn Limit**: If the turn limit is reached with fewer than 2 objectives completed, the game auto-selects the 2 most advanced from available progress, applies a -20 Era Score penalty, and the player is transitioned to the next age (forced transition). If the turn limit is reached with 2+ objectives completed, no penalty applies. Age transition via turn limit is NOT optional — it is a hard deadline that triggers forced transition.
+- **Transition**: Requires completing at least 2 Legacy Path objectives for voluntary early transition. Same rules as Antiquity→Exploration transition (voluntary early with no penalty after 2 objectives; forced transition by turn limit with -20 Era Score penalty if fewer than 2 objectives completed).
 - **Available Civilizations** (12):
    1. Byzantium (Faith/Military bonus)
    2. Japan (Production bonus, coastal/naval warfare specialty)
   3. Mongolia (Movement/Combat bonus)
   4. Mali (Gold/Faith bonus)
   5. Songhai (Gold/Conquest bonus)
-  6. Ottoman (Production/Gunpowder bonus)
+  6. Ottoman (Production/Gunpowder-era bonus)
   7. Spain (Exploration bonus)
   8. France (Culture/Diplomacy bonus)
   9. England (Naval bonus)
@@ -116,15 +117,15 @@ The game is divided into three distinct ages, each representing a major era of h
   1. Launch spaceship to Alpha Centauri
   2. Control 25+ cities
   3. Control 50%+ of the world's total population (sum of all population across all players' cities)
-  4. Win any victory condition
-   5. Be Suzerain of all city-states spawned in the game (e.g., all 8 city-states on a Standard map — scales with city-state count setting)
+  4. Win any other victory condition (Domination, Science, Cultural, Religious, or Diplomatic)
+  5. Be Suzerain of all city-states spawned in the game simultaneously. This requires meeting the Suzerain threshold (typically 3 envoys; 2 envoys may suffice if no competitor has invested more) for each city-state simultaneously — must be achieved and maintained, and if a city-state is lost, it must be regained before the objective is complete. Example: 8 city-states on Standard map (scales with city-state count setting in Game Setup: 4-16 range, default 8). See Section 3.6.3 for detailed Suzerain mechanics.
 
 ### 2.2 Civilization Selection System
 
 Each age allows players to choose a new civilization based on their previous selections:
 - **Locked Options**: Civs that connect from previous age (e.g., Rome → Italy)
 - **New Options**: Fresh civilization choices for the new age
-- **Cross-era Synergies**: Bonus for thematic transitions (e.g., Egypt → Ottoman). The synergy grants: +1 Era Score per city per completed synergy tier. Synergy tiers:
+- **Cross-era Synergies**: Bonus for thematic transitions (e.g., Egypt → Ottoman). The synergy grants Era Score based on completed synergy tier. Synergy tiers:
   - **Tier 1** (1 shared theme): +1 Era Score
   - **Tier 2** (2 shared themes): +2 Era Score + unique building
   - **Tier 3** (3+ shared themes): +3 Era Score + unique unit
@@ -207,7 +208,7 @@ Fog of War behavior varies by difficulty setting:
 | Standard | All tiles within 3 tiles of any unit | Grayed out | Hidden (dark) |
 | Deity | All tiles within 2 tiles of any unit | Grayed out + shows terrain only | Hidden (dark) |
 
-- **Cheat Mode**: No fog of war (full map visible)
+- **Cheat Mode**: No fog of war (full map visible). All tiles visible, no fog of war mechanics apply.
 - **"Seen" tiles** on Standard/Deity: Show last known terrain, resources, and improvements but units/cities only if currently visible
 - **City sight radius**: 2 tiles (standard), +1 for cities with Walls, +2 for cities with Broadcast Tower
 - **Unit sight radius**: 1 tile for ground units, 2 for scouts, 3 for naval, 5 for aircraft
@@ -233,7 +234,7 @@ There are 8 discoverable **Natural Wonders** (tile features, first to discover e
 **World Wonders** (9 total — built in cities, unique effects, only 1 per civilization per wonder):
 1. **Great Library** (+1 Science per Library, +1 Science per University in the building's city only — effects apply to this city only)
 2. **Colossus** (+2 Gold per Harbor in the building's city, +2 Gold to all trade routes)
-3. **Hanging Gardens** (+1 Food per farm per city, +1 Amenity)
+3. **Hanging Gardens** (+1 Food per farm per city, +1 Amenity) — a single wonder
 4. **Great Wall** (+20% Production toward Walls building, +1 Culture per worked tile in cities with Walls built)
 5. **Oracle** (+2 Culture, +2 Faith, +1 Great Prophet point)
 6. **Petra** (+2 Gold, +1 Production to all worked Desert tiles empire-wide)
@@ -282,7 +283,7 @@ There are 8 discoverable **Natural Wonders** (tile features, first to discover e
 
 #### 2.5.5 Diplomatic Victory
 - Win 4/6 World Congress votes at game end
-- **World Congress formation**: First World Congress session is held at the start of Exploration Age (Turn 1 of Exploration Age), after all players have had at least 3 cities
+- **World Congress formation**: First World Congress session is held at the start of Exploration Age (Turn 1 of Exploration Age), after each player has founded at least 3 cities
 - Subsequent sessions every 15 turns (Standard speed)
 - Favorable resolution of 3+ crises
 - Accumulate enough Diplomatic Favor to win voting sessions (20+ stored Favor provides advantage at World Congress votes, but the primary win condition is winning 4 of 6 votes at game end)
@@ -328,6 +329,7 @@ Era Score is earned through notable achievements, tracked per turn and cumulativ
 | Found a city | +5 | Yes |
 | Construct a Wonder | +10 | Yes |
 | Kill a unit | +1 | Yes |
+| Kill a Barbarian Leader | +8 | Yes |
 | Recruit a Great Person | +8 | Yes |
 | Discover a Natural Wonder | +5 | Yes |
 | Establish a Religion | +10 | No |
@@ -373,8 +375,15 @@ Player may voluntarily transition early once 2 Legacy objectives are complete. A
 
 #### 3.2.2 Tile Yield Formula
 ```
-Base Yield + (Improvement Bonus) + (Specialist Bonus) + (Government Bonus) + (Policy Bonus)
+TileYield = (BaseYield + ResourceBonus + FeatureBonus) × (1 + DifficultyMultiplier) × (1 + PolicyBonus) + GovernmentBonus + ImprovementBonus
 ```
+- **BaseYield**: Terrain base yields (e.g., Grassland = 2 Food)
+- **ResourceBonus**: Bonus from bonus/strategic resources (+1-2 per resource)
+- **FeatureBonus**: Modifiers from terrain features (e.g., Floodplains +2 Food)
+- **DifficultyMultiplier**: Beginner=2.0, Easy=1.33, Standard=1.0, Deity=0.5 (higher values make the game easier by multiplying yield, e.g., Beginner yield = base × 2.0 (yields are doubled); Standard yield = base × 1.0 (standard); Deity yield = base × 0.5 (yields are halved). Note: These are used as multipliers in the TileYield formula, so higher multiplier values produce larger final yields, making the game easier.)
+- **PolicyBonus**: Percentage bonuses from active policies (e.g., +10% = 0.1)
+- **GovernmentBonus**: Flat bonuses from government type
+- **ImprovementBonus**: Flat yields from tile improvements (e.g., Mine +2 Production)
 
 #### 3.2.3 City Yield Formula
 ```
@@ -385,16 +394,17 @@ Sum of all working tile yields + Base city yield (2 Food, 1 Production, 0 Gold) 
 
 Difficulty affects starting resources, tile yields, and AI competitiveness:
 
-| Difficulty | Tile Yield Multiplier | Production Multiplier | Population Yield | Starting Gold | Starting Units | Starting Resources | AI Aggression |
+| Difficulty | Tile Yield Multiplier | Production Multiplier | Pop Yield Bonus | Starting Gold | Starting Units | Starting Resources | AI Aggression |
 |------------|----------------------|-----------------------|------------------|---------------|---------------|--------------------|---------------|
-| Beginner | 3x | 3x | +10/pop | 150 | 2 Warriors + 2 Settlers | Abundant resources | Disabled (AI plays passively) |
-| Easy | 2x | 2x | +5/pop | 125 | 1 Warrior + 2 Settlers | Abundant resources | Very Low |
-| Standard | 1x | 1x | +0.5/pop | 100 | 1 Warrior + 1 Settler | Standard resources | Standard |
-| Deity | 0.7x | 0.7x | +0.25/pop | 50 | 0 Warriors + 0 Settlers | Sparse resources | Very High |
+| Beginner | 2.0 | 2.0 | +10/pop | 150 | 2 Warriors + 2 Settlers | Abundant resources | Disabled (AI plays passively) |
+| Easy | 1.33 | 1.33 | +5/pop | 125 | 1 Warrior + 2 Settlers | Abundant resources | Very Low |
+| Standard | 1.0 | 1.0 | +0.5/pop | 100 | 1 Warrior + 1 Settler | Standard resources | Standard |
+| Deity | 0.5 | 0.5 | +0.25/pop | 50 | 0 Warriors + 0 Settlers | Sparse resources | Very High |
 
-"Population Yield" column means each population point in a city provides additional yield on worked tiles.
+"Population Yield Bonus" column shows a flat bonus to each worked tile's yield per population point (cumulative, not per-population incremental).
 "AI Aggression" determines how aggressively the built-in AI pursues military victory and attacks (does not affect LLM AI behavior).
 "Starting Resources" affects the abundance of bonus, luxury, and strategic resources on the map.
+"Tile Yield Multiplier" and "Production Multiplier": Higher multiplier values produce larger final yields (easier gameplay). Used in the tile yield formula as multipliers, so Beginner with 2.0 gives base×2 (doubled yields), Deity with 0.5 gives base×0.5 (halved yields).
 
 #### 3.2.5 Cheat Mode
 
@@ -421,11 +431,12 @@ When Cheat Mode is active, an orange "CHEAT" badge displays in the top bar. Chea
 | Era | Tech | Cost (Beakers) | Eureka Trigger | Eureka Bonus |
 |-----|------|----------------|-----------------|--------------|
 | **Antiquity** | Mining | 20 | Mine a resource tile | -50% |
-| | Bronze Working | 35 | Kill a unit with a melee unit | -50% |
+| | Bronze Working (Tech) | 35 | Kill a unit with a melee unit | -50% |
 | | Masonry | 25 | Build 3 Mines | -50% |
 | | Pottery | 20 | Build 3 Farms | -50% |
 | | Writing | 40 | Earn 100 Gold | -50% |
 | | Mathematics | 45 | Train a Scout unit | -50% |
+| | Iron Working (Tech) | 65 | Train a Swordsman unit | -50% |
 | | Construction | 55 | Build 3 Forts | -50% |
 | | Currency | 60 | Build a Market | -50% |
 | | Philosophy | 70 | Build a Shrine | -50% |
@@ -433,7 +444,7 @@ When Cheat Mode is active, an orange "CHEAT" badge displays in the top bar. Chea
 | | Archery | 35 | Train an Archer unit | -50% |
 | | Sailing | 35 | Discover a Coast tile | -50% |
 | | Calendar | 45 | Harvest a luxury resource | -50% |
-| | Engineering | 100 | Build a Fort | -50% |
+| | Engineering | 100 | Build a Road | -50% |
 | | Animal Husbandry | 30 | Build a Pasture | -50% |
 | **Exploration** | Paper | 90 | Build a Library | -50% |
 | | Printing | 150 | Build 3 Libraries | -50% |
@@ -442,53 +453,56 @@ When Cheat Mode is active, an orange "CHEAT" badge displays in the top bar. Chea
 | | Cartography | 150 | Have a unit enter an unexplored tile | -50% |
 | | Shipbuilding | 120 | Build a Harbor | -50% |
 | | Astronomy | 140 | Build a Harbor | -50% |
-| | Navigation | 180 | Reach the New World | -50% |
-| | Metallurgy | 200 | Build a Forge | -50% |
-| | Steam Power | 250 | Build an Industrial Zone district | -50% |
+| | Navigation (Exploration) | 180 | Reach the New World | -50% |
+| | Metallurgy | 200 | Train a Heavy Cavalry unit | -50% |
+| | Steel | 200 | Build a Forge | -50% |
 | | Military Tactics | 180 | Train 3 Melee units | -50% |
 | | Education | 200 | Build 3 Libraries | -50% |
 | | Refrigeration | 180 | Harvest a Whale resource | -50% |
 | | Banking | 220 | Build a Market | -50% |
-| | Steel | 200 | Build a Forge | -50% |
+| | Steam Power | 250 | Build an Industrial Zone district | -50% |
 
 #### 3.3.2 Technology Prerequisites (Partial List)
 | Tech | Prerequisites | Unlocks |
 |------|-------------|---------|
 | Mining | - | Bronze Working, Construction, Masonry |
-| Bronze Working | Mining | Swordsman unit (via unit system) |
+| Bronze Working (Tech) | Mining | Swordsman unit (via unit system) |
 | Construction | Mining | Engineering, Roads |
 | Animal Husbandry | - | Horse Riding, Pastures |
 | Sailing | — | Optics, Shipbuilding |
 | Optics | Sailing | Astronomy, Navigation, Cartography |
 | Compass | Sailing | Navigation |
 | Cartography | Optics | Astronomy |
-| Astronomy | Optics | Navigation |
-| Navigation | Optics | Astronomy |
-| Iron Working | Bronze Working | Metallurgy, Heavy Cavalry units |
+| Astronomy | Optics | — |
+| Navigation | Compass | Caravelle, Ship of the Line |
+| Navigation (Exploration) | — | (no unlocks — Navigation civic provides Inspiration trigger only) |
+| Iron Working (Tech) | Bronze Working | Metallurgy, Heavy Cavalry units |
 | Metallurgy | Iron Working | Steel |
 | Steam Power | Metallurgy | Electricity, Industrial Zone |
 | Steel | Iron Working | Refining, Military Tactics |
 | Education | Printing | Universities |
-| Printing | Medieval Faires | Banking |
+| Printing | — | Banking |
 | Banking | Education | Stock Exchange |
 | Refrigeration | Education | Seaside Resorts |
 | Electricity | Steam Power | Nuclear Fission |
 | Refining | Steel | Combustion |
 | Combustion | Refining | Flight, Rocketry, Forts |
 | Nuclear Fission | Electricity | Fusion |
+| Computers | Electricity | Telephones |
 | Flight | Combustion | Advanced Flight |
 | Rocketry | Combustion | Satellites |
-| Fusion | Nuclear Fission | Advanced Computing |
+| Fusion | Nuclear Fission | — |
+| Advanced Computing | Fusion | Supercomputer, Laser |
 
-#### 3.3.3 Modern Era Technologies
+#### 3.3.3 Modern Era Technologies (Exploration+ prerequisites may apply)
 | Tech | Cost | Prerequisite | Eureka Trigger | Eureka Bonus |
 |------|------|-------------|---------------|-------------|
 | Radio | 350 | — | Build a Stock Exchange | -50% |
-| Electricity | 300 | Steam Power | Build a Factory | -50% |
+| Electricity | 300 | Steam Power (Exploration+) | Build a Factory | -50% |
 | Computers | 500 | Electricity | Build a Research Lab | -50% |
 | Telephones | 400 | Electricity | Build a Stock Exchange | -50% |
 | Plastics | 450 | Refining | Discover Oil resource | -50% |
-| Combustion | 500 | Refining | Build a Fort | -50% |
+| Combustion | 500 | Refining (Exploration+) | Build a Fort | -50% |
 | Flight | 400 | Combustion | Build an Aerodrome | -50% |
 | Advanced Flight | 550 | Flight | Build 3 Airports | -50% |
 | Rocketry | 700 | Combustion | Build a Rocket Artillery | -50% |
@@ -496,7 +510,7 @@ When Cheat Mode is active, an orange "CHEAT" badge displays in the top bar. Chea
 | Robotics | 750 | Electricity | Build a Factory | -50% |
 | Satellites | 800 | Rocketry | Build a Solar Plant | -50% |
 | Laser | 900 | Advanced Computing | Build 3 Research Labs | -50% |
-| Advanced Computing | 1200 | Computers | Build a Supercomputer | -50% |
+| Advanced Computing | 1200 | Fusion | Build a Supercomputer | -50% |
 | Fusion | 1100 | Nuclear Fission | Reach Fusion tech | -50% |
 
 #### 3.3.4 Civic Tree (Parallel to Technology Tree)
@@ -512,18 +526,18 @@ Civics progress independently from Technologies and unlock policy cards and gove
 | | Foreign Trade | 55 | — | Establish a Trade Route | -50% |
 | | Recording History | 60 | — | Build a Monument | -50% |
 | | Mysticism | 65 | — | Build a Shrine | -50% |
-| | Bronze Working | 70 | — | Discover a Natural Wonder | -50% |
-| | Iron Working | 80 | — | Improve Iron resource | -50% |
+| | Bronze Working (Civic) | 70 | — | Discover a Natural Wonder | -50% |
+| | Iron Working (Civic) | 80 | Bronze Working (Civic) | Improve Iron resource | -50% |
 | | Naval Tradition | 85 | — | Build a Harbor | -50% |
 | | Coinage | 90 | — | Earn 50 Gold | -50% |
 | **Exploration** | Medieval Faires | 100 | — | Build a University | -50% |
 | | Printing Press | 140 | — | Have 3 Libraries | -50% |
-| | Navigation | 160 | — | Reach the New World | -50% |
+| | Navigation (Exploration) | 160 | — | Establish an international trade route to a continent you did not start on (requires having reached a different continent) | -50% |
 | | Enlightenment | 180 | — | Recruit a Great Person | -50% |
 | | Military Drill | 200 | — | Build a Barracks | -50% |
 | | Economics | 220 | — | Build a Bank | -50% |
 | | Humanism | 250 | — | Build 3 Temples | -50% |
-| | Exploration | 280 | — | Land on 2 new continents | -50% |
+| | Exploration | 280 | — | Land on 2 continents you did not start on | -50% |
 | | Reformation | 300 | — | Found a Religion | -50% |
 | | Mercantilism | 320 | — | Have 5 luxury resources connected | -50% |
 | | Corporations | 380 | — | Have 5 unique resource types improved | -50% |
@@ -532,7 +546,7 @@ Civics progress independently from Technologies and unlock policy cards and gove
 | | Urbanization | 450 | Civil Engineering | Reach 10 population in a city | -50% |
 | | Replaceable Parts | 500 | Civil Engineering | Build a Factory | -50% |
 | | Conservation | 550 | Urbanization | Plant 3 Forests | -50% |
-| | Electricity | 600 | Civil Engineering | Build a Power Plant | -50% |
+| | Electrification | 600 | Civil Engineering | Build a Power Plant | -50% |
 | | Mass Media | 700 | Replaceable Parts | Build 3 Broadcast Towers | -50% |
 | | Global Warming | 800 | Mass Media | Trigger a climate crisis | -50% |
 | | Social Media | 900 | Mass Media | Reach 100 population in a city | -50% |
@@ -556,7 +570,7 @@ Civics use the same policy card tier system as Technologies (Tier 1/2/3 based on
 | Monarchy | Antiquity | +20% Gold | 2 Military, 1 Economic |
 | Theocracy | Antiquity | +2 Faith | 1 Military, 1 Religious |
 | Merchant Republic | Exploration | +50% Trade Routes | 1 Economic, 1 Diplomatic |
-| Constitutional Monarchy | Exploration | +2 Gold per Campus | 1 Military, 1 Economic, 1 Diplomatic |
+| Constitutional Monarchy | Modern | +2 Gold per Campus | 1 Military, 1 Economic, 1 Diplomatic |
 | Communism | Modern | +4 Housing | 2 Economic, 1 Industrial |
 | Democracy | Modern | +1 Gold per 10 population | 2 Economic, 1 Diplomatic |
 | Fascism | Modern | +50% Production towards units | 3 Military |
@@ -578,7 +592,7 @@ Each government type provides passive bonuses and unlocked policy slots. Players
 #### 3.5.1 Unit Classes
 | Class | Antiquity | Exploration | Modern | Special |
 |-------|-----------|-------------|--------|---------|
-| **Melee** | Warrior, Swordsman, Legion | Musketman, Samurai | Infantry, Mechanized Infantry | High base strength |
+| **Melee** | Warrior, Swordsman | Musketman, Samurai | Infantry, Mechanized Infantry | High base strength |
 | **Ranged** | Archer, Crossbowman | Cannon, Machine Gun | - | Attack from 2 tiles |
 | **Siege** | Catapult | Bombards | Artillery, Rocket Artillery | +100% vs walls, can't move+attack |
 | **Light Cavalry** | Horseman, Chariot Archer | Cavalry | - | Ignores ZOC, high movement |
@@ -586,7 +600,8 @@ Each government type provides passive bonuses and unlocked policy slots. Players
 | **Naval Melee** | Galley | Caravelle, Frigate | Destroyer, Missile Cruiser | Coastal/water combat |
 | **Naval Ranged** | - | Galleass, Ship of the Line | Battleship | Ranged naval |
 | **Air** | - | - | Fighter, Bomber, Jet Fighter | Strategic bombing |
-| **Support** | Scout, Settler | Caravel (exploration) | - | Non-combat roles |
+| **Support** | Scout, Settler | Scout, Settler, Caravel (exploration) | - | Non-combat roles |
+| **Mercenary** | - | Mercenary (Exploration+, unlocked via Policies) | - | Gold-based unit, replaces military units with production bonus |
 
 #### 3.5.2 Combat Formula
 ```
@@ -595,7 +610,8 @@ Damage = max(1, EffectiveStrength) × BaseDamage ÷ 10
 ```
 - **Base Damage**: 20 for Melee, 15 for Ranged
 - **Minimum Damage**: 1 (even if defender has higher strength)
-- **Terrain Bonus**: Hills/Forest +25%, Mountains +50%, Fort/City +40%
+- **Terrain Bonus**: Hills/Forest +25%, Mountains +50%, Fort tile improvement +50%, City +40%
+- **Fortification Status**: Units can fortify (pressing F or Fortify button) on any tile. Fortification grants a multiplicative defense bonus using formula: `FortificationMultiplier = 1 + (0.05 × fortificationTurns)` where each turn of fortification adds +5%, stacking up to +20% after 4 turns (FortificationMultiplier = 1.20). Units in a Fort tile improvement get both the Fort terrain bonus (+50%) and the fortification bonus (if fortified). Fortification does not stack with the Fort tile improvement bonus — the Fort tile improvement bonus (50%) replaces the fortification bonus (max 20%).
 - **ZOC Penalty**: -10% strength when entering enemy ZOC
 - **Ranged Penalty**: -33% strength if moved before attacking
 - **Charging**: +15% vs units below 50% health
@@ -605,7 +621,7 @@ Damage = max(1, EffectiveStrength) × BaseDamage ÷ 10
   - Strength: 150 (extremely powerful)
   - Movement: 1
   - Range: 7 tiles (can be launched from a distance)
-  - Effect: Destroys all units and buildings in the target tile and all adjacent tiles. Leaves behind Fallout terrain (impassable, -1 Amenities to nearest city). Enemy cities in blast radius are captured with 1 population and lose all buildings/districts. Friendly cities in blast radius lose all buildings/districts and population.
+  - Effect: **Automatic destruction** — does not use the standard combat formula. Destroys all units and buildings in the target tile and all adjacent tiles. Leaves behind Fallout terrain (impassable, -1 Amenities to nearest city). Enemy cities in blast radius are captured with 1 population and lose all buildings/districts. Friendly cities in blast radius lose all buildings/districts and population.
   - Cooldown: 10 turns between uses
   - Requires: Uranium resource (consumed on use)
 
@@ -623,30 +639,42 @@ Damage = max(1, EffectiveStrength) × BaseDamage ÷ 10
 
 **Camp Spawning**:
 - Barbarian Camps spawn on land tiles at game start (after player/AI city placement) and periodically throughout the game.
-- Initial camps: `floor(totalPlayers ÷ 2)` + 1 (so Duel=2, Small=3, Standard=4, Large=5, Huge=7), capped at 8 maximum
-- **"Per player"** means total player count (human + all AI opponents combined)
+- Initial camps: `(floor(totalPlayers ÷ 2)) + 1` (so Duel=2, Small=3, Standard=4, Large=5, Huge=7), capped at 8 maximum. "totalPlayers" means total player count (human + all AI opponents combined)
 - Camp density: 1 camp per ~40 valid land tiles (fewer camps than previously stated to prevent spam)
-- Spawn rate: 1 new camp every 30 turns (Standard difficulty), scaled by difficulty
+- **New camp spawn rate**: 1 new camp every 30 turns (Standard difficulty), scaled by difficulty as shown in Difficulty Scaling table below
+- **Unit spawn interval**: Units spawn from existing camps at the intervals shown in the Camp Scaling table (varies by era and difficulty)
 - Camps spawn at least 8 tiles away from any player's starting position
+- **Minimum camp spacing**: Barbarian camps must be at least 10 tiles apart (center-to-center distance). If no valid tile exists within the spawn region at minimum distance from all existing camps, the spawn is skipped for that interval.
 - Camps spawn Barbarian Scouts (2-turn patrol) and Raiders (4-turn patrol)
 - Scout discovers player → notifies camp → camp spawns Raiders
 - If Scout fails to report within 8 turns, camp spawns faster (2 Raiders instead of 1)
 - **Initial scouts**: Each camp spawns 1 Scout immediately at game start (Scouts start with 1 turn of patrol already used so they don't immediately reveal the map)
+- **Camp cap**: Maximum 8 camps can exist at any time (initial + spawned). New camps do not spawn once the cap is reached, regardless of difficulty setting.
 
 **Camp Scaling**:
-| Era | Scout Strength | Raider Strength | Unit Spawn Interval |
-|-----|---------------|-----------------|-------------------|
-| Antiquity | 4 | 6 | Every 8 turns |
-| Exploration | 8 | 14 | Every 6 turns |
-| Modern | 16 | 28 | Every 4 turns |
-*New Barbarian Camp spawns every 30 turns (scaled by difficulty), independent of era.*
+| Era | Difficulty | Scout Strength | Raider Strength | Leader Strength | Unit Spawn Interval |
+|-----|------------|---------------|-----------------|----------------|-------------------|
+| Antiquity | Beginner | 0 | 0 | 0 | N/A (inactive) |
+| Antiquity | Easy | 4 | 6 | 10 | Every 12 turns |
+| Antiquity | Standard | 4 | 6 | 10 | Every 8 turns |
+| Antiquity | Deity | 6 | 9 | 15 | Every 6 turns |
+| Exploration | Beginner | 0 | 0 | 0 | N/A (inactive) |
+| Exploration | Easy | 8 | 14 | 18 | Every 9 turns |
+| Exploration | Standard | 8 | 14 | 18 | Every 6 turns |
+| Exploration | Deity | 12 | 21 | 27 | Every 4 turns |
+| Modern | Beginner | 0 | 0 | 0 | N/A (inactive) |
+| Modern | Easy | 16 | 28 | 36 | Every 6 turns |
+| Modern | Standard | 16 | 28 | 36 | Every 4 turns |
+| Modern | Deity | 24 | 42 | 54 | Every 3 turns |
+*New Barbarian Camp spawns every 30 turns (scaled by difficulty), independent of era. Unit Spawn Interval refers to unit spawning from existing camps.*
 
 **Difficulty Scaling**:
-- Beginner: 0% spawn rate (initial camps and periodic camps disabled entirely)
-- Easy: 50% spawn rate → periodic camps spawn every 60 turns instead of 30
-- Standard: 100% spawn rate → periodic camps spawn every 30 turns
-- Deity: 150% spawn rate → periodic camps spawn every 20 turns
-- Note: Initial camps still exist on Beginner but are inactive (visible but neutral)
+- Beginner: 0% spawn rate (initial camps still spawn but are inactive/neutral; no periodic new camps spawn). See Camp Scaling table for unit strength values (all 0 for inactive camps).
+- Easy: 50% spawn rate → periodic camps spawn every 60 turns instead of 30 (both camp spawns AND unit spawns from existing camps are halved; unit strength follows Easy values from the Camp Scaling table, which match Standard)
+- Standard: 100% spawn rate → periodic camps spawn every 30 turns (baseline values from the Camp Scaling table)
+- Deity: 150% spawn rate → periodic camps spawn every 20 turns (both camp spawns AND unit spawns are 1.5× frequency; unit strength uses Deity values from the Camp Scaling table, which are 1.5× Standard values)
+- Note: On Beginner, initial camps spawn at game start but remain inactive (visible but do not attack or spawn units)
+- **What scales with difficulty**: Both the Barbarian spawn RATE (more frequent camp spawns and unit spawns) and unit STRENGTH scale with difficulty. The Camp Scaling table's unit strength values are fixed per era-difficulty combination (Deity uses 1.5× Standard values, Easy matches Standard). The difficulty multiplier affects both how often camps spawn and how strong their units are.
 
 **Barbarian Leaders** (all eras):
 - Every 20 turns, a Barbarian Leader may spawn at an existing camp with a 30% chance
@@ -689,10 +717,19 @@ The following units are referenced in the Unit Classes table (3.5.1) but not yet
 |------|-----|-------|-------|
 | **Bombards** | Exploration | Siege | Replaces Catapult; +100% vs walls, cannot move+attack same turn |
 | **Cuirassier** | Exploration | Heavy Cavalry | Requires Metallurgy; has Charge ability |
-| **Caravelle** | Exploration | Naval Melee | Discovered by Navigation; coastal exploration |
-| **Galleass** | Exploration | Naval Ranged | Replaces Galley; ranged naval combat |
-| **Ship of the Line** | Exploration | Naval Ranged | Requires Optics; powerful ranged naval |
+| **Caravelle** | Exploration | Naval Melee | Discovered by Navigation technology; coastal exploration |
+| **Galleass** | Exploration | Naval Ranged | Upgrade from Galley; ranged naval combat |
+| **Ship of the Line** | Exploration | Naval Ranged | Discovered by Navigation technology; powerful ranged naval |
 | **Steamship** | Exploration | Naval Melee | Requires Steam Power; not affected by wind |
+| **Infantry** | Exploration | Melee | Standard melee unit unlocked by Military Tactics; becomes prominent in Modern Age but available from Exploration Age |
+| **Musketman** | Exploration | Melee | Requires Education; replaces Swordsman/Legion |
+| **Samurai** | Exploration | Melee | Japan unique unit; requires Education |
+| **Mechanized Infantry** | Modern | Melee | Requires Combustion; upgrade from Infantry |
+| **Fighter** | Modern | Air | Requires Flight; air combat and strategic bombing |
+| **Bomber** | Modern | Air | Requires Advanced Flight; heavy strategic bombing |
+| **Jet Fighter** | Modern | Air | Requires Advanced Flight; upgraded Fighter unit with improved air combat stats |
+| **Tank** | Modern | Heavy Cavalry | Requires Combustion; has Charge ability |
+| **Modern Armor** | Modern | Heavy Cavalry | Requires Advanced Computing; upgraded Tank |
 
 #### 3.5.7 National Parks
 
@@ -701,7 +738,8 @@ National Parks are part of the Cultural Victory path (Section 2.5.3). Mechanics:
 - **Valid terrain**: 4 adjacent tiles that are Mountains, Hills (no mines/improvements), or untouched natural tiles. All 4 tiles must be owned by the player and within the city's workable radius.
 - **Build**: Great Naturalist spends charges to establish a park on valid terrain. Each Naturalist can create 1 National Park.
 - **Yield**: Each National Park provides +10 Tourism per turn.
-- **Limit**: Maximum 1 National Park per unique terrain configuration per player.
+- **Amenities from National Parks**: Cities with a Zoo building (Entertainment district, Conservation civic, 300 Production) gain +2 Amenities from each National Park within their workable radius. National Parks without a Zoo do not provide Amenities.
+- **Limit**: Maximum 1 National Park per unique terrain configuration per player. "Unique terrain configuration" means all 4 tiles must share the same terrain type category (e.g., all Mountains OR all Hills OR all untouched natural tiles). Two National Parks cannot use the same terrain type category, regardless of specific tile locations.
 
 ### 3.6 City Management
 
@@ -710,8 +748,8 @@ National Parks are part of the Cultural Victory path (Section 2.5.3). Mechanics:
 - Regular City: City Center + 1 tile per population (up to 12)
 - Citizens: 1 per worked tile, can be assigned to specialists
 - Specialists: 2 base + 1 per 10 population (scientist, merchant, artist, etc.)
-- **City Growth Formula**: Each turn, city accumulates `FoodSurplus = FoodProduced - FoodConsumed`. `FoodForGrowth = Population × 2 + 4`. When `FoodStockpile ≥ FoodForGrowth`, city grows by 1 population and `FoodStockpile` resets (minus `FoodForGrowth`).
-- **Housing Cap**: Population cannot exceed `Housing`. Excess population causes `Amenities` deficit.
+- **City Growth Formula**: Each turn, city accumulates `FoodSurplus = FoodProduced - FoodConsumed` where `FoodConsumed = Population × 1`. `FoodForGrowth = Population × 2 + 4`. When `FoodStockpile ≥ FoodForGrowth`, city grows by 1 population and `FoodStockpile` resets (minus `FoodForGrowth`).
+- **Housing Cap**: Population cannot exceed `Housing`. Excess population causes `Amenities` deficit. **Housing Formula**: `BaseHousing = 2 + (CityCenter × 1) + (Palace × 1) + (Aqueduct × 3) + (Sewer × 2) + (Neighborhood × 4)`. Default city starts with 3 Housing (2 base + 1 from Palace). Additional Housing buildings scale with population: Barracks (+1), Granary (+1), Stable (+1), Water Mill (+1), Factory (+2, requires Power).
 - **Growth Blockers**: Unworked tiles, food deficits, housing limits, amenities deficits all affect growth rate.
 - **Aqueduct**: Enables city growth past 10 population (removes hard housing cap at 10).
 
@@ -719,30 +757,33 @@ National Parks are part of the Cultural Victory path (Section 2.5.3). Mechanics:
 
 | District | Building | Cost | Effect |
 |----------|----------|------|--------|
-| **Campus** (District, base: +2 Science) | Library | 60 | +2 Gold, +1 Science, +1 Great Scientist point |
-| | University | 160 | +2 Science, +1 Science from adjacent mountains or natural wonders, +1 Great Scientist point |
-| | Research Lab | 380 | +4 Science, +50% Science from Campus district |
+| **Campus** (District, base: +2 Science) | Library | Writing (60) | +2 Gold, +1 Science, +1 Great Scientist point, +1 Great Writing slot |
+| | University | Library (160) | +2 Science, +1 Great Scientist point |
+| | Research Lab | Computers (380) | +4 Science, +50% Science from Campus district |
 | **Commercial Hub** (District, base: +2 Gold) | Market | 70 | +1 Gold, +25% Gold |
 | | Bank | 290 | +2 Gold, +50% Gold |
 | | Stock Exchange | 570 | +3 Gold, +75% Gold |
-| **Industrial Zone** (District, base: +2 Production) | Workshop | 100 | +1 Production, +1 Production from adjacent mines |
+| **Industrial Zone** (District, base: +2 Production) | Workshop | 100 | +1 Production, +1 Production from adjacent Industrial Zone |
 | | Factory | 260 | +3 Production, +2 Power, +1 Production for each adjacent Industrial Zone |
 | | Power Plant | 540 | +4 Production, +1 Production for each adjacent Factory |
 | **Theater Square** (District, base: +2 Culture) | Amphitheater | 80 | +2 Culture, +1 Great Artist point |
-| | Arena | 170 | +2 Culture, +1 Great Writer point, +1 Amenity |
-| | Museum | 360 | +4 Culture, +2 Culture from Great Art, +2 Great Art slots, +1 Great Art point |
-| | Broadcast Tower | 500 | +3 Culture, +3 Tourism, +2 Great Musician points |
+| | Museum | 360 | +4 Culture, +2 Culture from Great Works of Art, +2 Great Art slots, +2 Artifact slots, +1 Great Art point |
+| | Broadcast Tower | 500 | +3 Culture, +3 Tourism, +1 Great Work of Music slot, +2 Great Musician points |
 | **Holy Site** (District, base: +2 Faith) | Shrine | 50 | +2 Faith, +2 Great Prophet points |
 | | Temple | 140 | +3 Faith, +1 Great Prophet point |
-| | Cathedral | 340 | +2 Faith, +2 Culture, +3 Tourism, +1 Great Work of Art slot |
+| | Cathedral | Philosophy (340) | +2 Faith, +2 Culture from Great Works of Art in Museums, +3 Tourism, +1 Great Work of Art slot |
 | **Encampment** (District, base: +2 Production) | Barracks | 70 | +15 XP to all units built, +1 Military Policy slot |
 | | Armory | 200 | Unlocks Level 1 promotions |
 | | Military Academy | 420 | +30 XP to all units built |
-| | Walls | Engineering | 120 | +3 Defense strength to city, +1 City sight radius, +1 Amenity |
-| **Harbor** (District, base: +2 Gold) | Lighthouse | 80 | +1 Gold, +1 Production, +1 Food from adjacent water tiles with Fishing Boats, +1 Trade Route capacity |
+| | Walls | Engineering (120) | +3 Defense strength to city, +1 City sight radius, +1 Amenity |
+| **Harbor** (District, base: +2 Gold) | Lighthouse | 80 | +1 Gold, +1 Production, +1 Food from adjacent water tiles with Fishing Boats, +1 Trade Route capacity (additive to base 2 routes) |
 | | Shipyard | 220 | +2 Gold, +2 Production, +1 Production from adjacent Harbor district |
 | | Seaport | 400 | +3 Gold, +2 Production, +1 Great Admiral point, +25% Production toward naval units |
-| **Aqueduct** | (District, not a building) | 100 | +3 Housing, +2 Production, enables city growth past 10 population |
+| **Entertainment** (District, base: +2 Amenities) | Arena | 170 | +2 Culture, +1 Great Writer point, +1 Amenity |
+| | Zoo | Conservation (300) | +2 Amenities from National Parks |
+| **Aqueduct** | District | 100 | +3 Housing, +2 Production, enables city growth past 10 population |
+| **Sewer** | Civil Engineering | 300 | +2 Housing |
+| **Neighborhood** | Urbanization | 600 | +4 Housing, +1 Amenity |
 | **Aerodrome** | (District, base: —) | 220 | +2 Air capacity, +25% Production toward air units. Unlocked by Flight technology. |
 | **Palace** | (Auto-built in capital, not constructable) | 0 | +2 Gold, +2 Science, +2 Culture, +1 Science per adjacent Campus, +1 Culture per adjacent Theater Square |
 | **Water Mill** | Construction | 70 | +2 Production, +1 Food to adjacent farm tiles |
@@ -750,9 +791,9 @@ National Parks are part of the Cultural Victory path (Section 2.5.3). Mechanics:
 | **Forge** | Metallurgy | 130 | +1 Production, +1 Gold, +15% Production toward military units |
 | **Ironworks** | Steel | 300 | +4 Production, +1 Production from adjacent mines and quarries |
 | **Stable** | Horse Riding | 80 | +1 Production, +15 XP to cavalry units, enables Light Cavalry training |
-| **Gallery** | — | 60 | +2 Culture, +1 Great Art slot, +1 Great Artist point |
+| **Gallery** | Recording History | 60 | +2 Culture, +1 Great Art slot, +1 Great Artist point |
 | **Embassy** | Foreign Trade | 50 | Enables Open Borders diplomatic agreement with the civilization that built it, +2 Gold from trade routes to that civilization |
-| **Observatory** | Astronomy | 150 | +2 Science, +50% Science from Campus district |
+| **Observatory** | Astronomy | 150 | +2 Science, +25% Science from Campus district |
 
 #### 3.6.3 City-States (18 Types)
 
@@ -769,35 +810,34 @@ National Parks are part of the Cultural Victory path (Section 2.5.3). Mechanics:
 | **Hattusa** | - | +2 Gold for each active Trade Route |
 | **Nan Madol** | - | +2 Production from Reefs |
 | **Rapa Nui** | - | +2 Culture from Moai improvements |
-| **Akkad** | - | +100% Production toward Mercenaries |
+| **Akkad** | - | +100% Production toward Mercenaries (requires Mercenary unit, unlocked via Policies) |
 | **Samarkand** | - | +30% Gold from domestic Trade Routes |
 | **Muscat** | - | +1 Amenity from Entertainment |
 | **Stockholm** | - | +1 Great Scientist point per Library |
 | **Buenos Aires** | - | +1 Amenity from every Luxury |
-| **Seoul** | - | +2 Science from Campus buildings |
+| **Seoul** | - | +2 Science from Campus buildings per city |
 | **Lisbon** | - | +2 Gold per international Trade Route |
 
 Envoy investment: 2 envoys at game start (distributed across city-states of choice), +1 additional envoy at turn 6, +3 at turn 12, +6 at turn 18 (per civilization). Players receive 2 envoys at the start of the game to enable early Suzerain competition.
 
 **Suzerain System**:
-- **Suzerain**: The player with the most envoys invested in a city-state becomes its Suzerain
-- **Suzerain threshold**: 3 envoys to become Suzerain of a city-state (minimum; ties broken by first arrival)
+- **Suzerain**: The player with the most envoys invested in a city-state becomes its Suzerain (default threshold: 3 envoys; if no competitor has invested more, a player with 2 envoys can still become Suzerain, ties broken by first arrival)
 - **Suzerain bonuses**: Unique bonus per city-state type (see table above)
 - **Competing for Suzerain**: If another player surpasses your envoy count, they become the new Suzerain
-- **Suzerain for All City-States victory** (Legacy Path): Requires being Suzerain of ALL city-states spawned in the game simultaneously
+- **Suzerain for All City-States victory** (Legacy Path): Requires being Suzerain of ALL city-states spawned in the game simultaneously. Must be achieved and maintained — if a city-state is lost, it must be regained before the objective is complete. Scales with city-state count setting (4-16, default 8). For example: Standard map spawns 8 city-states by default (see Game Setup: City-States setting).
 
 #### 3.6.4 Tile Improvements
 
 | Improvement | Tech Required | Build Cost | Effect | Valid Tiles |
 |------------|----------------|------------|--------|-------------|
 | Farm | Pottery | 3 turns | +1 Food (+2 Food on Floodplains, stacking with civilization bonuses) | Grassland, Plains, Floodplains |
-| Mine | Mining | 4 turns | +2 Production | Hills, Mountains |
-| Quarry | Masonry | 3 turns | +1 Production | Stone, Marble |
+| Mine | Mining | 4 turns | +2 Production | Hills, Mountains, Iron tiles, Copper tiles |
+| Quarry | Masonry | 3 turns | +1 Production (+2 Production if on Stone or Marble) | Stone, Marble, Hills, Mountains |
 | Pasture | Animal Husbandry | 4 turns | +1 Production, +1 Food | Cattle, Sheep |
 | Plantation | Calendar | 3 turns | +1 Production + Luxury | Sugar, Spices, Tobacco |
-| Camp | - | 4 turns | +1 Production | Deer, Furs, Ivory, Stone |
+| Camp | - | 4 turns | +1 Production | Deer, Furs, Ivory |
 | Fishing Boat | Sailing | 2 turns | +1 Food | Fish, Whales |
-| Fort | Military Tactics | 5 turns | +50% defense, blocks passage | Any |
+| Fort | Engineering | 5 turns | +50% defense (replaces fortification bonus when fortified), impassable to enemy units | Any |
 | Railroad | Steam Power | 2 turns | +100% movement (requires tech) | Hills, Plains |
 | Road | Engineering | 3 turns | +50% movement | Any |
 | Airfield | Flight | 5 turns | +2 Air capacity | Any |
@@ -807,9 +847,11 @@ Envoy investment: 2 envoys at game start (distributed across city-states of choi
 | Oil Well | Combustion | 4 turns | +1 Production, +1 Gold | Oil |
 | Coal Mine | Steam Power | 4 turns | +2 Production | Coal |
 | Aluminum Mine | Combustion | 4 turns | +1 Production | Aluminum |
-| Quarry | Masonry | 3 turns | +1 Production (+2 Production if on Stone or Marble resource) | Hills, Mountains |
+
 
 **Resource-specific improvements** (alternative to regular Mine for specific resources):
+- Mine (Iron): Mining, +2 Production (standard Mine improvement, valid on Iron resource tiles)
+- Mine (Copper): Mining, +2 Production (standard Mine improvement, valid on Copper resource tiles)
 - Well (Oil): Combustion, +1 Production, +1 Gold (replaces Mine for Oil tiles)
 - Mine (Aluminum): Combustion, +1 Production (replaces Mine for Aluminum tiles)
 - Mine (Uranium): Nuclear Fission, +2 Production (replaces Mine for Uranium tiles)
@@ -828,9 +870,9 @@ Captured capitals: If the original capital is captured, the civilization is "cap
 
 #### 3.7.1 Trade Routes
 - Base routes: 2 (same for all governments, regardless of type)
-- Government trade bonuses are applied as policy cards (Tier 1/2/3) that provide gold/production bonuses to trade routes, not as extra route slots
+- Government trade bonuses are applied passively (not through policy slots), as specified in the Government Types table (Section 3.4.1)
 - Trade route capacity: +1 per 50 population
-- International route: Gold generation + culture sharing
+- International route: Gold generation + culture sharing (+2 Culture per turn)
 - Domestic route: Internal food/production bonuses
 
 #### 3.7.2 Trade Route Yields (Standard Difficulty)
@@ -842,7 +884,7 @@ Captured capitals: If the original capital is captured, the civilization is "cap
 | Naval (International) | 6-12 | +15 Tourism |
 | Treasure Fleet (Exploration+) | 20-50 | Gold only |
 
-Trade route yield ranges are determined by: `baseYield + (playerGoldPerTurn ÷ 50) + (distanceBonus ÷ 2)`. `distanceBonus` = number of road or railroad tiles along the trade route path. International routes gain bonus gold from having more improvements along the route path. Treasure Fleets yield based on the number of active Trade Routes the sending civilization has.
+Trade route yield ranges are determined by: `baseYield + (playerGoldPerTurn ÷ 50) + (distanceBonus ÷ 2)`, where `baseYield` is the minimum yield value shown in the table (e.g., 2 for Land Domestic, 4 for Land International). `playerGoldPerTurn` is the sender's current gold income per turn. `distanceBonus` = number of road or railroad tiles along the trade route path. International routes gain bonus gold from having more improvements along the route path. Treasure Fleets yield based on the number of active Trade Routes the sending civilization has.
 
 #### 3.7.3 Trade Panel UI (Section 4.2.5)
 
@@ -909,7 +951,7 @@ Great Works are created by Great Persons and stored in appropriate buildings.
 - Checked at the END of each player's turn
 - If a player's religion has >50% followers in ALL major civilizations' cities simultaneously, the founding player wins
 - A civilization is considered "converted" if >50% of its total population follows that religion
-- If two religions simultaneously reach >50% in all civs, the one with the higher total percentage wins
+- If two religions simultaneously reach >50% in all civs, the one with the higher total percentage of followers (sum of all followers across all cities) wins
 - **End of game check**: Religious Victory is evaluated at the start of Modern Age; if no Religious Victory has occurred by then, Religious Victory becomes unavailable for the rest of the game
 
 #### 3.10.4 Natural Wonder Discovery
@@ -934,7 +976,7 @@ Great Works are created by Great Persons and stored in appropriate buildings.
 - Scout→Camp revelation: If a Barbarian Scout reaches a player's city or settler, the Scout disappears and the camp spawns Raiders on the next turn. The camp's location becomes visible to that player. Scouts do not trigger camp spawning for other players' camps.
 
 #### 3.10.7 Raze Duration Formula
-- City razing duration: `population × 1.5` turns (minimum 3 turns)
+- City razing duration: `max(3, population × 1.5)` turns
 - Each razing turn: city loses 1 population, grants `population × 2` gold
 - If razing city reaches 0 population, the city is destroyed and the tile becomes unclaimed
 - Razing does NOT destroy buildings/districts — they are all lost at destruction
@@ -949,9 +991,9 @@ Great Works are created by Great Persons and stored in appropriate buildings.
 #### 3.10.9 Unit Upgrades
 - Units can be upgraded when the prerequisite technology is researched
 - Upgrade cost: `50% of the new unit's production cost` (paid in Gold)
-- Upgraded units retain: health, promotions, experience, current position
+- Upgraded units retain: health, promotions, experience, current position, embarked status
 - Upgraded units do NOT retain: cargo, fortification status
-- Not all units have a direct upgrade path (e.g., Scout → Caravel, Settler is consumed)
+- Not all units have a direct upgrade path (e.g., Scout can upgrade to Caravel when embarked on coastal water, Settler is consumed on founding)
 
 #### 3.10.10 Warmonger Penalty System
 - Declaring war on another civilization generates **War Weariness** points: +5 War Weariness per turn while at war
@@ -1049,7 +1091,7 @@ Great Works are created by Great Persons and stored in appropriate buildings.
 ┌──────────────────────────────────────────────────────────────┐
 │  GOVERNMENT                                                 │
 ├──────────────────────────────────────────────────────────────┤
-│  Current: Monarchy (Exploration)   [Change Government: 10🎭]│
+│  Current: Constitutional Monarchy (Modern) [Change Government: 40🎭]│
 ├──────────────────────────────────────────────────────────────┤
 │  MILITARY (2)         │ ECONOMIC (1)                        │
 │  ─────────────────────┼────────────────────                  │
@@ -1433,6 +1475,24 @@ server/
 
 #### 5.3.1 Game State
 ```typescript
+// Type Aliases
+type playerId = number;
+type cityStateId = string;
+type TileId = string;
+type UnitId = string;
+type TerrainType = 'ocean' | 'coast' | 'grassland' | 'plains' | 'desert' | 'tundra' | 'snow' | 'mountain';
+type TerrainFeature = 'floodplains' | 'oasis' | 'reefs' | 'forest';
+type ResourceType = 'wheat' | 'cattle' | 'sheep' | 'deer' | 'stone' | 'marble' | 'fish' | 'whale' | 'sugar' | 'spices' | 'furs' | 'ivory' | 'jade' | 'pearls' | 'wine' | 'dyes' | 'cotton' | 'cocoa' | 'coffee' | 'tea' | 'tobacco' | 'amber' | 'citrus' | 'horses' | 'iron' | 'copper' | 'coal' | 'oil' | 'aluminum' | 'uranium';
+type ImprovementType = 'farm' | 'mine' | 'quarry' | 'pasture' | 'plantation' | 'camp' | 'fishing_boat' | 'fort' | 'road' | 'railroad' | 'airfield' | 'windmill' | 'seaside_resort' | 'moai' | 'oil_well' | 'coal_mine' | 'aluminum_mine';
+type ActionType = 'MOVE' | 'ATTACK' | 'BUILD' | 'FOUND_CITY' | 'PILLAGE' | 'FORTIFY' | 'SLEEP' | 'ALERT' | 'SKIP_TURN' | 'UPGRADE' | 'PROMOTE' | 'FOUND_RELIGION' | 'SPREAD_RELIGION' | 'REMOVE_HERESY' | 'TRADE' | 'ESTABLISH_ENVoy' | 'CHANGE_GOVERNMENT' | 'ADOPT_POLICY' | 'START_PROJECT' | 'LAUNCH_VICTORY';
+type UnitType = string;
+type GovernmentType = 'chiefdom' | 'classical_republic' | 'merchant_republic' | 'monarchy' | 'theocracy' | 'fascism' | 'communism' | 'democracy' | 'digital_democracy';
+type MapSize = 'duel' | 'small' | 'standard' | 'large' | 'huge';
+type MapType = 'continents' | 'islands' | 'pangaea' | 'shuffle' | 'earthlike';
+type Difficulty = 'beginner' | 'easy' | 'standard' | 'deity';
+type GameSpeed = 'online' | 'standard' | 'marathon';
+type VictoryType = 'domination' | 'science' | 'culture' | 'religious' | 'diplomatic' | 'age';
+
 interface GameState {
   id: string;
   turn: number;
@@ -1685,9 +1745,9 @@ interface OpenRouterConfig {
 4. BUILT-IN RANDOM AI (final fallback if all fail)
 ```
 
-#### 5.5.4 Meta Prompt (Condensed ~250 tokens)
+#### 5.5.4 Meta Prompt
 
-The full game state is too large for free LLM models. The meta prompt is condensed to ~250 tokens:
+The full game state is too large for free LLM models. The condensed meta prompt (~250 tokens) summarizes key game state information:
 
 ```
 You are the AI opponent in Civilization VII. You are playing as [CIV]. You are in the [AGE] Age, Turn [N].
@@ -1920,10 +1980,10 @@ World Wonder construction costs are defined in `wonders.json` (see Section 6.4).
 - [ ] AI turn time reasonable (30s per LLM, instant for built-in)
 
 ### 9.3 Difficulty & Cheats
-- [ ] Beginner difficulty: 3x yields, extra units, no barbarians
-- [ ] Easy difficulty: 2x yields, reduced barbarians
-- [ ] Standard difficulty: normal yields
-- [ ] Deity difficulty: 0.7x yields, extra barbarians, no starting units
+- [ ] Beginner difficulty: 2.0x multiplier (2x yields), extra units, no barbarians
+- [ ] Easy difficulty: 1.33x multiplier (~1.33x yields), reduced barbarians
+- [ ] Standard difficulty: normal yields (1.0x multiplier)
+- [ ] Deity difficulty: 0.5x multiplier (0.5x yields), extra barbarians, no starting units
 - [ ] Cheat Mode sliders (1x-100x) functional
 - [ ] Cheat Mode badge visible in top bar
 - [ ] Cheat Mode does NOT affect AI opponents
@@ -2001,11 +2061,220 @@ World Wonder construction costs are defined in `wonders.json` (see Section 6.4).
 
 ---
 
-*Document Version: 3.9*  
-*Last Updated: March 2026 (Review Cycle 10 - Complete)*  
-*Project: CIVLite - Browser-Based Civilization Clone*
+*Document Version: 3.69*  
+*Last Updated: March 2026 (Review Cycle 50)*  
+*Project: CivLite - Browser-Based Civilization Clone*
 
 ## Change Log
+
+### Version 3.69 (March 2026)
+- **Fixed Suzerain threshold inconsistency in Legacy Path objective**: Section 2.1.3's objective 5 stated "requires 3 envoys invested per city-state" but Section 3.6.3's detailed Suzerain mechanics explain that 2 envoys may suffice if no competitor has invested more. Clarified the objective wording to reference the threshold system defined in Section 3.6.3, eliminating the contradiction.
+- **Fixed Infantry era classification wording**: Section 3.5.6's Infantry entry used parenthetical clarification that was confusing. Simplified to: "Standard melee unit unlocked by Military Tactics; becomes prominent in Modern Age but available from Exploration Age."
+- **Clarified Cathedral building culture source**: Removed parentheses from "from Great Works of Art in Museums" to clarify that Cathedral itself does not provide culture — only Great Works of Art stored in Museums provide the culture bonus.
+
+### Version 3.68 (March 2026)
+- **Fixed Cathedral building table entry format**: Section 3.6.2 listed Cathedral with "Philosophy | 340" as separate Prerequisite and Cost columns, but the table format combines prerequisite and cost in the same column (e.g., "Writing (60)" for Library, "Conservation (300)" for Zoo). Changed Cathedral to "Philosophy (340)" to match the established format for all other buildings in the table.
+- **Removed redundant Zoo building civic requirement**: Section 3.6.2's Zoo entry included "(Conservation civic required)" in the Effect column, but this information was already redundant since Conservation is already listed as the prerequisite in the Cost column ("Conservation (300)"). Removed the redundant parenthetical for clarity.
+- **Added Fortification multiplier formula**: Section 3.5.2's Fortification Status description stated "+5% defense strength, stacking up to +20% after 4 turns" without defining the actual formula. Added explicit formula: `FortificationMultiplier = 1 + (0.05 × fortificationTurns)` to clarify the multiplicative nature of the bonus and ensure consistent implementation with terrain bonuses that also use multiplicative stacking.
+- **Streamlined Suzerain Legacy Path objective wording**: Section 2.1.3's objective 5 contained redundant parenthetical information that duplicated content already defined in Section 3.6.3 (Suzerain threshold details). Simplified the wording to eliminate redundancy while maintaining the reference to Section 3.6.3 for detailed mechanics.
+
+### Version 3.67 (March 2026)
+- **Fixed Government Trade Bonus contradiction**: Section 3.7.1 stated "Government trade bonuses are applied as policy cards (Tier 1/2/3)" but the Government Types table (Section 3.4.1) lists Merchant Republic's "+50% Trade Routes" as a passive government bonus, not a policy card mechanism. Clarified that government bonuses apply passively as specified in the Government Types table, resolving the contradiction.
+- **Removed redundant Barbarian "per player" definition**: Section 3.5.4 had two consecutive statements defining "per player" (lines 642-643), where the second was redundant with the first. Removed the duplicate "**\"Per player\"** means total player count (human + all AI opponents combined)" line.
+- **Fixed National Parks mixed terrain contradiction**: Section 3.5.7's example stated "Mixed configurations like 2 Mountains + 2 Hills count as one terrain type combination" which contradicts the rule that "all 4 tiles must share the same terrain type category." Removed the contradictory mixed-terrain example to ensure consistency.
+- **Fixed Cathedral building table formatting**: Section 3.6.2 listed Cathedral with "Philosophy (340)" in the prerequisite column, combining prerequisite and cost in parentheses. This was inconsistent with other buildings like Zoo that use "Prerequisite | Cost" as separate columns. Changed to "Philosophy | 340" format to match the table structure and removed the redundant "(Enlightenment civic)" parenthetical from the Effect column.
+
+### Version 3.66 (March 2026)
+- **Fixed Legion incorrectly listed as generic Melee unit**: Section 3.5.1's Unit Classes table listed "Legion" as a generic Antiquity Melee unit alongside Warrior and Swordsman, but Section 2.1.1 defines Legion as Rome's unique unit ("Rome (Production bonus, Legion unique)"). Removed Legion from the generic Melee list since unique units should not appear as generic options available to all civilizations.
+- **Fixed Workshop adjacent bonus inconsistency**: Section 3.6.2's Workshop entry stated "+1 Production from adjacent mines" but this conflicts with Section 2.1.3's Modern Age mechanics description ("Buildings (Workshop, Factory, Power Plant) scale with adjacent Industrial Zones") and the Factory entry ("+1 Production for each adjacent Industrial Zone"). The Workshop bonus was incorrectly copying the Ironworks building's bonus (+1 Production from adjacent mines and quarries, as shown at line 793). Changed Workshop's adjacent bonus to "+1 Production from adjacent Industrial Zone" to match the Industrial Zone scaling pattern.
+- **Fixed Navigation technology row format inconsistency**: Section 3.3.1's Navigation (Exploration) row displayed 6 columns: "Navigation (Exploration) | 180 | Compass | Reach the New World | -50%" where "Compass" appeared in the Eureka Trigger column as a prerequisite, creating an inconsistent format with all other technology rows that show 5 columns (Era, Tech, Cost, Eureka Trigger, Eureka Bonus). Removed the extraneous "Compass" prerequisite column to match the standard 5-column format. The prerequisite for Navigation is already properly defined in Section 3.3.2's prerequisites table.
+
+### Version 3.65 (March 2026)
+- **Fixed Library missing Writing prerequisite**: Section 3.6.2's Library building entry had no technology prerequisite listed ("—"), but Section 3.6.1's Buildings table includes Library as a prerequisite for University, implying it can be built without a prerequisite. However, the Library is referenced by Great Writer storage (Section 3.9), Writing technology (Section 3.3.1), and Printing/University Eureka triggers. Added "Writing" as the technology prerequisite for Library to complete the building progression chain.
+- **Fixed Barracks row format inconsistency**: Section 3.6.2's Barracks entry used "Engineering (120)" format in parentheses while other Encampment buildings (Armory, Military Academy) used "—" and "Walls" used "Engineering | 120" format. Standardized Barracks to "| Engineering | 120 |" format for consistency with the table's structure (District | Building | Cost | Effect columns).
+- **Fixed redundant Campus Science bonus**: Both Research Lab and Observatory provide "+50% Science from Campus district" in Section 3.6.2. Changed Observatory's bonus to "+2 Science, +25% Science from Campus district" to differentiate it from Research Lab's effect and make Observatory a meaningful intermediate building.
+- **Fixed Jet Fighter prerequisite clarification**: Section 3.5.6 listed Jet Fighter as "Requires Advanced Flight" but both units are in the Modern era, creating ambiguity about whether Jet Fighter replaces or upgrades from Fighter. Added clarifying note that Jet Fighter is an upgraded Fighter unit (not a separate line), requiring Advanced Flight and providing improved air combat stats.
+- **Clarified Exploration civic "new continents" requirement**: Section 3.3.4's Exploration civic listed "Land on 2 new continents" as its Inspiration trigger. Changed to "Land on 2 continents you did not start on" to clarify that "new" means continents other than the player's starting continent, consistent with Navigation technology's "Reach the New World" trigger language.
+- **Clarified Harbor Lighthouse Trade Route capacity**: Section 3.6.2's Lighthouse entry showed "+1 Trade Route capacity" but Section 3.7.1 already defines base routes as 2 (same for all governments). Clarified that Lighthouse's +1 capacity is additive to the base 2 routes, making total capacity 3 for cities with a Lighthouse.
+- **Fixed missing Computers technology prerequisite entry**: Section 3.3.3 listed Computers (Electricity, 500 beakers) but Section 3.3.2's prerequisites table had no entry for Computers. Added "Computers | Electricity | Telephones" to complete the Modern era technology dependency chain.
+- **Clarified National Parks terrain combination limit**: Section 3.5.7's "unique terrain configuration" limit stated that National Parks cannot share terrain type combinations but was ambiguous about whether all 4 tiles must match or just share tile types. Added clarifying note that the 4 tiles must all share the same terrain type category (e.g., all Mountains OR all Hills OR all natural tiles), so mixed configurations like 2 Mountains + 2 Hills count as one configuration.
+
+### Version 3.64 (March 2026)
+- **Duplicate of v3.63** (removed duplicate entries; all content moved to v3.63)
+
+### Version 3.63 (March 2026)
+- **Fixed Navigation (Tech) prerequisite and added era label**: Section 3.3.1 listed Navigation without an era label and without showing Compass as its prerequisite, creating inconsistency with Section 3.3.2 which shows Compass → Navigation. Added "Compass" prerequisite and "(Exploration)" era label to Navigation in Section 3.3.1. Also added unlocks (Caravelle, Ship of the Line) to Navigation entry in prerequisites table.
+- **Fixed Advanced Computing prerequisite contradiction**: Section 3.3.2 showed Fusion → Advanced Computing (Fusion unlocks Advanced Computing), but Section 3.3.3 listed Computers as Advanced Computing's prerequisite. This created a circular dependency: Nuclear Fission → Fusion → ? → Advanced Computing → Computers (where ? would need to unlock both Advanced Computing and Computers). Changed Section 3.3.3 to show Fusion as the prerequisite for Advanced Computing, matching Section 3.3.2. Added "Supercomputer, Laser" as the unlocks for Advanced Computing in Section 3.3.2.
+- **Completed Barbarian Camp Scaling table with all difficulty levels**: The Camp Scaling table only had Standard and Deity rows, but the Difficulty Scaling section describes Beginner, Easy, Standard, and Deity. Added Beginner rows (0 strength, N/A intervals - inactive camps) and Easy rows (Standard strength values, 50% spawn rate) for all three eras. Also updated Difficulty Scaling text to reference the updated table and clarify Easy uses Standard-strength values (not separate Easy-strength values).
+
+- **Fixed Hanging Gardens Wonder entry wording**: Section 2.4.6's Hanging Gardens entry used "Wonder" singular while the section header stated "World Wonders (9 total)" and all other wonder entries used their full names. Added "— a single wonder" to clarify the grammar matches the actual item (a single wonder, not multiple wonders).
+- **Consolidated Suzerain redundant entries**: Section 3.6.3 had two consecutive bullet points that were partially redundant: "- **Suzerain**: The player with the most envoys..." and "- **Suzerain threshold**: 3 envoys...". Combined into a single consolidated bullet that defines both the concept and threshold together.
+- **Clarified Fort tile improvement vs fortification interaction**: Section 3.6.4's Fort tile entry now explicitly states "(replaces fortification bonus when fortified)" to match the clarification in Section 3.5.2, making the tile improvement section self-contained.
+- **Clarified Easy difficulty spawn rate scaling**: Section 3.5.4's Easy difficulty entry stated "50% spawn rate → periodic camps spawn every 60 turns" without clarifying whether this applies to both camp spawns AND unit spawns from existing camps. Added explicit note that 50% applies to BOTH camp spawns AND unit spawns, and that unit strength follows Standard values (not scaled like Deity).
+
+### Version 3.61 (March 2026)
+- **Added missing Antiquity Age transition rules**: Section 2.1.1 was missing transition rules that were referenced by Section 2.1.2's "Same rules as Antiquity→Exploration transition" but were never defined in Section 2.1.1. Added transition paragraph matching the structure of Sections 2.1.2 and 2.1.3, defining voluntary early transition (2+ objectives, no penalty) and forced transition (turn limit, <2 objectives = -20 Era Score penalty, no Age Victory).
+- **Fixed Zoo building prerequisite**: Section 3.6.2's Zoo entry showed "300" in the Cost column instead of indicating the Conservation civic prerequisite. Changed to "Conservation (300)" to match the format of other buildings with civic prerequisites.
+- **Clarified Cathedral building effect**: Section 3.6.2's Cathedral effect listed "+2 Culture" without clarifying that this bonus comes from Great Works of Art stored in Museums, not from the Cathedral itself. Added "(from Great Works of Art in Museums)" to clarify the source of this culture bonus.
+- **Fixed University building prerequisite**: Section 3.6.2's University entry showed "Research Lab" as the prerequisite, which is incorrect. University requires Library (to be built in a Campus), not Research Lab. Changed prerequisite to "Library required" for consistency.
+
+### Version 3.60 (March 2026)
+- **Fixed Tile Yield Formula structure**: The formula was using division by `(1 + DifficultyDivisor)` which produced the OPPOSITE effect of documented behavior. Beginner=0.5 gave ÷1.5=0.67× yield (harder instead of easier), Deity=2 gave ÷3=0.33× yield (even harder). Restructured formula to multiply by `(1 + DifficultyMultiplier)` with corrected values: Beginner=2.0 (base×2 = 2× yield, easier), Easy=1.33 (base×1.33 ≈ 1.33× yield), Standard=1.0 (base×1 = 1× yield), Deity=0.5 (base×0.5 = 0.5× yield, harder). Updated formula in Section 3.2.2, renamed DifficultyDivisor to DifficultyMultiplier, updated Difficulty-Based Economy table headers and values, and updated Acceptance Criteria descriptions.
+- **Fixed duplicate changelog entries**: v3.53 and v3.54 contained identical content. Removed duplicate v3.53 content, replaced with reference to v3.54.
+- **Clarified Navigation civic Eureka trigger**: Added "(requires having reached a different continent)" to clarify the international trade route requirement for Navigation (Exploration) civic Inspiration trigger.
+- **Fixed Aqueduct table formatting**: Changed "(District, not a building)" from cost column to proper "District" classification with 100 Production cost.
+
+### Version 3.58 (March 2026)
+- **Clarified Cheat Mode fog of war behavior**: Section 2.4.5's Cheat Mode entry was incomplete, stating only "No fog of war" without clarifying that all fog mechanics are disabled. Added explicit note that all tiles are visible and no fog of war mechanics apply.
+- **Clarified National Parks/Zoo/Amenities connection**: Section 3.5.7's Zoo building description was ambiguous about when Amenities are provided from National Parks. Added explicit statement that National Parks without a Zoo do not provide Amenities, and Cities with a Zoo gain +2 Amenities from each National Park within their workable radius.
+- **Fixed Suzerain example formatting**: Section 3.6.3's Legacy Path example had inconsistent punctuation and missing context. Changed to "For example: Standard map spawns 8 city-states by default" to clarify the scaling example.
+- **Clarified Barbarian camp cap behavior**: Section 3.5.4's "capped at 8 maximum" was ambiguous about whether this applies to all difficulties or just some. Added explicit note that the 8-camp maximum applies to all difficulty settings (initial + spawned combined), and new camps do not spawn once cap is reached.
+- **Clarified Beginner difficulty camp behavior**: Section 3.5.4's Difficulty Scaling description said "initial camps and periodic camps disabled entirely" but this conflicted with the later note that "initial camps still exist." Clarified that initial camps still spawn on Beginner but are inactive/neutral (do not attack or spawn units).
+- **Clarified Population Yield column header**: Section 3.2.4's "Population Yield" column header was ambiguous. Changed to "Pop Yield Bonus" and clarified that it shows a flat bonus to worked tile yields per population point (cumulative).
+
+### Version 3.57 (March 2026)
+- **Fixed DifficultyDivisor values**: The difficulty divisor values were inverted, causing Beginner difficulty to produce the hardest gameplay (smallest yields) and Deity to produce the easiest gameplay (largest yields) - the opposite of intended behavior. Swapped the values: Beginner=0.5 (dividing by 0.5 doubles yields), Easy=0.75 (~1.33x yields), Standard=1 (normal), Deity=2 (halves yields). Updated the DifficultyDivisor definition in Section 3.2.2, the Difficulty-Based Economy table in Section 3.2.4, and the Acceptance Criteria difficulty descriptions in Section 9.3.
+
+### Version 3.56 (March 2026)
+- **Fixed DifficultyDivisor description**: Section 3.2.2 stated "higher values make the game easier" which is mathematically incorrect when using these values as divisors in the formula. Lower values (smaller divisors) produce larger final yields (easier game), while higher values (larger divisors) produce smaller final yields (harder game). The example "Deity yield = base ÷ 0.7 = base × 1.43" showed Deity having 1.43× yields (harder), contradicting the text. Corrected to "lower values make the game easier" with updated explanation that divisor values work inversely to intuitive expectations.
+- **Clarified Suzerain Legacy Path objective wording**: Section 2.1.3 stated "requires 3 envoys invested per city-state" which conflicted with Section 3.6.3's explanation that 2 envoys may suffice if uncontested. Changed to "requires meeting the Suzerain threshold for each city-state — typically 3 envoys invested, though 2 envoys may suffice if no competitors have invested more" and added explicit reference to Section 3.6.3 for detailed mechanics.
+- **Clarified Barbarian initial camp formula**: Added explicit note to the initial camps formula that "totalPlayers" means total player count (human + all AI opponents combined), consistent with the "per player" definition that follows.
+
+### Version 3.55 (March 2026)
+- **Fixed Navigation technology prerequisite**: Section 3.3.2 listed Navigation as requiring Sailing directly, contradicting the Compass row which stated Compass unlocks Navigation. Navigation now correctly requires Compass (Sailing → Compass → Navigation chain), consistent with how naval exploration technologies typically chain together. Note: v3.54's Barbarian Difficulty Scaling entry stated strength does NOT scale, but the Camp Scaling table clearly shows Deity values are 1.5× Standard — this contradiction is corrected in this version.
+- **Fixed Barbarian Difficulty Scaling contradiction**: v3.54 stated "The Barbarian spawn RATE scales... not unit STRENGTH." However, the Camp Scaling table explicitly shows Deity unit strengths are 1.5× Standard values (Scout: 4→6, Raider: 6→9, Leader: 10→15). The text was factually incorrect. Updated to clarify that both spawn rate AND unit strength scale with difficulty, consistent with the table. Also removed the obsolete "×" column reference.
+- **Renamed DifficultyMultiplier to DifficultyDivisor and restructured formula**: Section 3.2.2 used `× (1 + DifficultyMultiplier)` where Beginner=3x makes tiles easier (3× yield = more food/production = easier), which is backwards for a "multiplier." Renamed to DifficultyDivisor and restructured formula to `÷ (1 + DifficultyDivisor)`, where dividing by larger numbers makes the game easier (Beginner: base÷3, Deity: base÷0.7). Updated the definition, formula, and Difficulty-Based Economy table headers/values accordingly. Added clarifying note that these values are used as divisors in calculations.
+
+### Version 3.54 (March 2026)
+- **Clarified Suzerain Legacy Path objective vs detailed mechanics**: Section 2.1.3 stated "requires 3 envoys invested per city-state" which created ambiguity with Section 3.6.3's detailed Suzerain mechanics that explain "2 envoys may suffice if no competitors have invested more." The objective requires meeting the Suzerain threshold (which is 3 envoys minimum, or 2 if uncontested), while the detailed mechanics define the nuanced threshold system. Clarified both sections to explicitly reference each other: Section 2.1.3 now states "requires 3 envoys invested per city-state to become Suzerain, though 2 envoys may suffice if no competitors have invested more — see Section 3.6.3 for detailed Suzerain mechanics" to match Section 3.6.3's language.
+- **Clarified Fort tile improvement vs Fortification bonus**: Section 3.6.4's Fort tile improvement description used "+50% defense" terminology. Clarified that the Fort tile improvement provides a defensive terrain bonus (+50% to defending strength) and is impassable to enemy units. The Zone of Control (ZOC) mentioned in Section 3.5.2 combat formula is a separate concept (-10% strength when entering enemy ZOC) that applies to attacking enemy-controlled tiles, not to Fort tiles.
+- **Clarified Barbarian Difficulty Scaling**: The Difficulty Scaling section described "scaled by difficulty" but did not explicitly state what scales. Added clarification: "scaled by difficulty means spawn RATE scales (more frequent camp spawns), not unit STRENGTH scaling. The Camp Scaling table's unit strength values are fixed per difficulty level (Deity uses higher base values than Standard, as shown in the table)." Note: this entry contained a factual error — see v3.55 for correction.
+- **Added Navigation civic to prerequisites table**: Section 3.3.2 was missing the Navigation civic entry from the prerequisites table, creating an inconsistency with the Civic Tree table (Section 3.3.4) which lists Navigation (Exploration) with prerequisite "—". Added Navigation (Exploration) to Section 3.3.2 with prerequisite "—" and unlock note "(no unlocks — Navigation civic provides Inspiration trigger only)".
+
+### Version 3.53 (March 2026)
+- **Duplicate of v3.54** (removed duplicate entries; all content moved to v3.54)
+
+### Version 3.52 (March 2026)
+- **Fixed Iron Working technology missing "(Tech)" suffix**: Section 3.3.1 cost table listed "Iron Working" without the "(Tech)" suffix, creating inconsistency with "Bronze Working (Tech)" in the same table. Added "(Tech)" suffix to match the naming convention.
+- **Fixed Bronze Working technology reference in prerequisites table**: Section 3.3.2 prerequisites table listed "Bronze Working" without the "(Tech)" suffix, causing inconsistency with the cost table entry. Added "(Tech)" suffix for consistency.
+- **Fixed Iron Working technology reference in prerequisites table**: Section 3.3.2 prerequisites table listed "Iron Working" without the "(Tech)" suffix, causing inconsistency with the cost table entry. Added "(Tech)" suffix for consistency.
+- **Added Mercenaries unit to Unit Classes table**: The Akkad city-state bonus references "+100% Production toward Mercenaries" but there was no Mercenary unit defined in Section 3.5.1. Added Mercenary unit class row to the table with note that it's unlocked via Policies in Exploration+ era.
+- **Added Entertainment district and moved Arena**: The Muscat city-state bonus references "+1 Amenity from Entertainment" but there was no Entertainment district defined. Added Entertainment district (base: +2 Amenities) with Arena and Zoo buildings (Zoo was moved from Theater Square to Entertainment since it provides Amenities, making it more appropriately placed in Entertainment district). Removed duplicate Arena from Theater Square to avoid conflicts.
+
+### Version 3.51 (March 2026)
+- **Fixed Gallery building missing technology prerequisite**: Section 3.6.2 Buildings table had Gallery with "—" in the Tech Required column, which was inconsistent with other buildings that have technology prerequisites. Added "Recording History" as the prerequisite since Gallery stores Great Works of Art (per Section 3.9) and Recording History is the civic that enables cultural buildings.
+- **Fixed Cross-era Synergies Era Score wording**: Section 2.1.3 stated "+1 Era Score per city per completed synergy tier" which made the tier descriptions ambiguous (lines 128-130 showed flat values). Changed to "The synergy grants Era Score based on completed synergy tier" to clarify the bonuses are flat values, not per-city.
+
+### Version 3.50 (March 2026)
+- **Fixed Navigation civic era label**: Section 3.3.4 listed the Navigation civic without an era label while other Exploration-era civics in the same block had no era label. Changed to "Navigation (Exploration)" to match the format of Navigation technology in Section 3.3.1 and clarify that this is a separate civic from the technology of the same name.
+- **Clarified Barbarian spawn intervals**: Section 3.5.4's description of camp spawning was ambiguous about the relationship between the 30-turn new camp spawn rate and the unit spawn intervals from existing camps. Added explicit distinction: "**New camp spawn rate**: 1 new camp every 30 turns (Standard difficulty), scaled by difficulty" and "**Unit spawn interval**: Units spawn from existing camps at the intervals shown in the Camp Scaling table (varies by era and difficulty)" to clarify these are two separate mechanics.
+
+### Version 3.49 (March 2026)
+- **Fixed project name inconsistency**: Changed "CIVLite" to "CivLite" in Section 1.1 Project Name and document header to match the actual project name format (lowercase "v" in "Lite").
+- **Fixed Ottoman civilization bonus wording**: Changed "Production/Gunpowder bonus" to "Production/Gunpowder-era bonus" in Section 2.1.2 (Exploration Age civilizations) to avoid confusion with non-existent "Gunpowder" technology.
+
+### Version 3.48 (March 2026)
+- **Fixed Fort tile improvement tech requirement**: Fort tile improvement was listed as requiring Military Tactics (Exploration era), but Construction (Antiquity) and Engineering (Antiquity) both had Eureka triggers requiring Forts. This created impossible Eurekas in Antiquity. Changed Fort to require Engineering instead of Military Tactics, enabling Fort building in Antiquity era and fixing the circular Eureka triggers.
+- **Fixed Engineering Eureka trigger**: Engineering's Eureka was "Build a Fort" but Fort now requires Engineering (circular). Changed to "Build a Road" since Roads are directly unlocked by Engineering.
+- **Expanded Tile Yield Formula**: Section 3.2.2 formula was vague ("Base Yield + Bonus + Bonus...") with no actual values or structure. Added complete formula with definitions: `TileYield = (BaseYield + ResourceBonus + FeatureBonus) × (1 + DifficultyMultiplier) × (1 + PolicyBonus) + GovernmentBonus + ImprovementBonus`, including definitions for each component.
+- **Clarified Infantry era placement**: Section 3.5.6 listed Infantry under "Exploration" era which contradicted Section 3.5.1 showing Infantry under Modern. Added clarifying note that Infantry is technically available from Exploration Age (via Military Tactics) but becomes prominent in Modern Age.
+
+### Version 3.47 (March 2026)
+- **Added Iron Working to Antiquity tech cost table**: Iron Working was referenced as a prerequisite for Heavy Cavalry units and Metallurgy technology (Section 3.3.2) but had no cost entry in Section 3.3.1's Antiquity era tech costs table. Added Iron Working (65 beakers, Eureka: Train a Swordsman unit, -50% bonus) to complete the tech progression chain.
+- **Fixed Constitutional Monarchy government era mismatch**: Section 4.2.4 Government Panel example displayed "Merchant Republic (Exploration)" with 20 Culture cost, but Constitutional Monarchy exists in Section 3.4.1 as a Modern era government (cost 40 Culture). Updated the example to display "Constitutional Monarchy (Modern) [Change Government: 40🎭]" to reflect the correct era and cost tier.
+- **Clarified Suzerain threshold in Legacy Path objective**: Section 2.1.3 objective 5 referenced "the Suzerain threshold" without defining it. Added explicit clarification: "requires 3 envoys invested per city-state to become Suzerain, though 2 envoys may suffice if no competitors have invested more" to align with Section 3.6.3's detailed Suzerain mechanics.
+- **Clarified Scout to Caravel upgrade path**: Section 3.10.9 mentioned "Scout → Caravel" without explaining how a Support class Scout upgrades to a Naval Melee Caravel. Added clarification that Scout can upgrade to Caravel when embarked on coastal water, making the upgrade path logical and consistent.
+
+### Version 3.46 (March 2026)
+- **Fixed Exploration Age civilization numbering gap**: Section 2.1.2 listed civilizations 10 (England) and 12 (Aztecs) with no number 11 between them. Added missing "11. Aztecs" to complete the sequential numbering for all 12 Exploration Age civilizations.
+- **Fixed Suzerain objective envoy reference**: Section 2.1.3 said "requires 3 envoys per city-state" which conflicted with Section 3.6.3's detailed Suzerain mechanics that explain the threshold can be 2 envoys with no competition. Changed to "requires meeting the Suzerain threshold" to avoid contradicting the nuanced suzerain mechanics defined in Section 3.6.3.
+- **Fixed duplicate Navigation civic/tech Eureka**: Navigation civic and Navigation technology both had "Reach the New World" as their Eureka/Inspiration trigger, creating redundancy. Changed Navigation civic's trigger to "Establish an international trade route to a continent you did not start on" to differentiate it from the technology's exploration-focused trigger.
+- **Clarified Fort tile improvement description**: Changed "blocks passage" to "impassable to enemy units" to better describe the Fort tile's actual gameplay effect rather than the vague "blocks passage" phrasing.
+- **Fixed Natural Wonders count mismatch**: Section 2.4.6 header stated "There are 9 discoverable Natural Wonders" but the numbered list only contains 8 items (Mt. Sinai, Lake Victoria, Krakatoa, Paititi, Bermuda Triangle, Giant's Causeway, Yongding, Tsingy). The 9th claimed item (Reefs) is actually defined as a tile feature, not a Natural Wonder. Changed header to "There are 8 discoverable Natural Wonders" to match the actual count.
+
+### Version 3.45 (March 2026)
+- **Fixed Refrigeration table formatting error**: Section 3.3.1 had an extra column in the Refrigeration row with "Education (Exploration+)" inserted where the format should only have 5 columns (Era, Tech, Cost, Eureka Trigger, Eureka Bonus). Removed the erroneous column.
+- **Added missing Modern era unit definitions**: Section 3.5.6 now includes all Modern era units referenced in the Unit Classes table (3.5.1): Infantry, Mechanized Infantry, Fighter, Bomber, Jet Fighter, Tank, and Modern Armor.
+- **Fixed Bronze Working and Iron Working naming conflict**: Added "(Tech)" and "(Civic)" suffixes to distinguish between the technology and civic versions of Bronze Working and Iron Working throughout the spec. This prevents implementation confusion since both have separate costs, prerequisites, and Eureka triggers.
+- **Clarified OpenRouter meta prompt section**: Removed "(Condensed ~250 tokens)" from section header and reworded the description to clearly state the prompt summarizes key game state information, not that it represents an uncondensed alternative.
+- **Defined trade route baseYield variable**: The trade route yield formula referenced `baseYield` but did not define it. Added definition: baseYield is the minimum yield value shown in the trade route table (e.g., 2 for Land Domestic, 4 for Land International), with modifiers added based on player gold per turn and distance.
+
+### Version 3.44 (March 2026)
+- **Fixed Natural Wonders count mismatch**: Section 2.4.6 header stated "8 discoverable Natural Wonders" but the list contains 9 items. Changed to "9 discoverable Natural Wonders" to match the actual count (Mt. Sinai, Lake Victoria, Krakatoa, Paititi, Bermuda Triangle, Giant's Causeway, Yongding, Tsingy, and Reefs).
+- **Added Barbarian Leader Era Score entry**: Section 3.1 Era Score table was missing the Barbarian Leader kill reward (+8 Era Score) despite Section 3.5.4 defining this reward. Added "| Kill a Barbarian Leader | +8 | Yes |" entry.
+- **Fixed era classification for Electricity, Refrigeration, and Combustion**: Section 3.3.3 listed these technologies under "Modern Era Technologies" header, but their prerequisites place them in Exploration+: Electricity requires Steam Power (Exploration+), Refrigeration requires Education (Exploration), and Combustion requires Refining (which requires Steel, both Exploration+). Added "(Exploration+)" suffix to these tech entries to clarify they become available in Exploration era. Also added clarifying note to the section header: "(Exploration+ prerequisites may apply)".
+- **Fixed duplicate Eureka trigger for Metallurgy and Steel**: Section 3.3.1 had both Metallurgy and Steel using "Build a Forge" as their Eureka trigger. Since the Forge building requires Metallurgy (per Section 3.6.2), this created a logical conflict. Changed Metallurgy's Eureka to "Train a Heavy Cavalry unit" (reflecting Metallurgy's unlock of Heavy Cavalry units) and kept Steel's Eureka as "Build a Forge" (valid since Forge requires Metallurgy, a prerequisite of Steel).
+- **Added clarifying parentheses to Barbarian Camp formula**: Section 3.5.4 showed `floor(totalPlayers ÷ 2) + 1` with line break separating the formula components, causing visual ambiguity. Added parentheses: `(floor(totalPlayers ÷ 2)) + 1` for clarity.
+- **Fixed Raze duration minimum threshold**: Section 3.10.7 stated "minimum 3 turns" but the formula `population × 1.5` yields 1.5 turns for cities with 1 population. Changed formula to `max(3, population × 1.5)` to ensure the minimum is always enforced mathematically.
+- **Clarified Nuclear Device combat mechanics**: Section 3.5.2.1 did not specify whether Nuclear Device damage uses the standard combat formula. Added explicit note: "**Automatic destruction — does not use the standard combat formula**" to clarify that nuclear weapons bypass combat resolution entirely.
+- **Added Suzerain threshold reference to Legacy Path objective**: Section 2.1.3's "Be Suzerain of all city-states" objective did not reference the suzerain threshold. Added "(requires 3 envoys per city-state)" to clarify the requirement, referencing Section 3.6.3's suzerain mechanics.
+
+### Version 3.43 (March 2026)
+- **Fixed Modern Age Legacy Path objective wording**: Section 2.1.3 point 4 previously said "Win any victory condition" which was ambiguous. Changed to "Win any other victory condition (Domination, Science, Cultural, Religious, or Diplomatic)" to clarify that Age Victory is about completing legacy objectives, not winning itself.
+- **Fixed Caravelle notation in Unit Classes table**: Section 3.5.1 showed "Caravelle (Compass)" which was incorrect. Caravelle is discovered by Navigation technology, not Compass. Removed the "(Compass)" suffix. Also fixed Ship of the Line from "Requires Optics" to "Discovered by Navigation technology" for consistency.
+- **Fixed Galleass description**: Changed "Replaces Galley" to "Upgrade from Galley" since Galleass is a Naval Ranged unit that upgrades from the Naval Melee Galley, not replaces it.
+- **Added Artifact slots to Museum building**: The Museum building was missing explicit Artifact slots despite Great Naturalists creating Great Works of Artifacts that are stored in Museum. Added "+2 Artifact slots" to the Museum building entry.
+- **Added Writing slots to Library building**: The Library was missing Great Writing slots despite Great Writers storing their works in Library or Museum. Added "+1 Great Writing slot" to the Library building entry.
+- **Added Music slots to Broadcast Tower**: The Broadcast Tower was missing Great Work of Music slots despite Great Musicians storing their works in Broadcast Tower or Theater Square. Added "+1 Great Work of Music slot" to the Broadcast Tower building entry.
+- **Fixed duplicate Steel technology entry**: Section 3.3.1 had Steel listed twice in the Exploration era tech table (both at row 451 and again after Banking). Removed the duplicate Steel entry at line 451-452.
+- **Added missing Steam Power to Exploration tech table**: Section 3.3.1 was missing Steam Power from the Exploration era technology costs table despite Steam Power being a key technology (prerequisite for Industrial Zones, Factories, Railroads). Added Steam Power (250 beakers) with Eureka trigger "Build an Industrial Zone district" to the Exploration era table between Banking and the Modern era section.
+- **Fixed duplicate Navigation naming conflict**: The spec contained both a "Navigation" technology (in 3.3.1 and 3.3.2) and a "Navigation" civic (in 3.3.4). This creates confusion since they serve different purposes (Navigation tech unlocks naval units like Caravelle/Ship of the Line, while Navigation civic provides "Reach the New World" inspiration). Added era labels to both entries in the tech cost table to distinguish them: "Navigation | 180 | Reach the New World" for technology (Exploration era).
+- **Fixed Great Library wording redundancy**: The Great Library wonder entry said "+1 Science per Library, +1 Science per University" which is redundant. Simplified to "+1 Science per Library and +1 Science per University in the building's city only" for clarity.
+- **Fixed Trade Route Capacity inconsistency**: Section 3.7.1 states base routes = 2, but Section 3.10.2 says maximum active trade routes = `2 + (population ÷ 50)`. These are consistent (base 2 plus 1 per 50 pop = formula). However, Section 3.7.2 (Trade Route Yields) only shows yields without referencing how route capacity is calculated. Added reference to Section 3.7.1's formula in the Trade Route Yields section for completeness.
+- **Fixed Constitutional Monarchy government era**: Section 3.4.1 Government Types table lists Constitutional Monarchy as a Modern era government, but earlier versions of the spec had it as Exploration. Modern is correct given Constitutional Monarchy's historical context and the table structure. No change needed - this was verified as correct.
+- **Verified Civil Engineering civic prerequisite**: Confirmed Civil Engineering is correctly listed as the prerequisite for Urbanization, Replaceable Parts, and Electrification civics in Section 3.3.4. No issues found.
+
+### Version 3.41 (March 2026)
+- **Fixed Suzerain of All City-States ambiguity**: Section 2.1.3 and Section 3.6.3 did not clarify whether suzerainty must be maintained simultaneously or achieved at any point. Clarified that players must be Suzerain of ALL city-states simultaneously at the moment of checking (consistent with how other victory conditions work). Added "(must be achieved and maintained simultaneously — if a city-state is lost, it must be regained before the objective is complete)".
+- **Fixed non-existent government reference in UI**: Section 4.2.4 Government Panel displayed "Constitutional Monarchy (Exploration)" as a government option, but Constitutional Monarchy does not appear in the Government Types table (Section 3.4.1). Changed to "Merchant Republic (Exploration)" since it is the only Exploration-era government in the table.
+- **Clarified Suzerain threshold text**: Changed "Suzerain threshold: 3 envoys to become Suzerain" to "Suzerain threshold: 3 envoys" to avoid redundant phrasing (the section already explains "The player with the most envoys invested in a city-state becomes its Suzerain").
+- **Clarified National Parks "unique terrain configuration"**: Added definition that "unique terrain configuration" means a unique combination of tile types (e.g., Mountain tiles only vs. Hills tiles only vs. mixed natural tiles). Two National Parks cannot use the same terrain type combination, regardless of specific tile locations.
+- **Fixed Suzerain bonus text**: Changed "Seoul: +2 Science from Campus buildings" to "Seoul: +2 Science from Campus buildings per city" to clarify that the bonus applies per-city, not per-city-state (consistent with other per-city bonuses like Zanzibar's "+2 Gold per city").
+
+### Version 3.40 (March 2026)
+- **Fixed self-referential Exploration Age transition text**: Section 2.1.2 said "Same rules as Exploration Age transition" which referenced itself. Changed to "Same rules as Antiquity→Exploration transition" for clarity.
+- **Fixed circular Technology prerequisites**: Section 3.3.2 had a circular dependency where Astronomy → Navigation → Astronomy. Removed cross-dependencies so Astronomy and Navigation both require Optics directly (no interdependency).
+- **Fixed Scout evolution notation**: Section 3.5.1 Support class row had confusing "Scout -> Caravel (exploration)" notation. Changed to list all Exploration support units explicitly: "Scout, Settler, Caravel (exploration)".
+- **Fixed Walls building table formatting**: Section 3.6.2 had Walls row incorrectly starting with "Encampment" in the first column. Changed to empty first column to properly continue under the Encampment district header.
+- **Fixed Camp improvement valid tiles**: Section 3.6.4 listed "Stone" as a valid tile for Camp, but Stone resources use Quarry improvement, not Camp. Removed Stone from Camp's valid tiles.
+
+### Version 3.39 (March 2026)
+- **Fixed Nuclear Fission era/prerequisite contradiction**: Section 3.3.1 listed Nuclear Fission in the Antiquity era table with prerequisite Metallurgy (cost 850), while Section 3.3.3 listed it in the Modern era table with prerequisite Electricity (cost 850). Nuclear Fission is now correctly placed in the Modern era with Electricity as its prerequisite. Removed the duplicate Nuclear Fission entry from Section 3.3.1 (which was also incorrectly listed as Antiquity-era). Updated the prerequisites table (3.3.2) to show Nuclear Fission (Electricity → Nuclear Fission → Fusion) as the correct dependency chain for Modern-era nuclear technology.
+- **Added Zoo building to Buildings table**: Zoo was defined in Section 3.5.7 (National Parks) and referenced in Section 3.6.3 (City-States), but had no formal entry in the Buildings table. Added Zoo (Theater Square district, 300 Production, Conservation civic required) with effect "+2 Amenities from National Parks." This completes the Zoo → National Parks connection across all relevant sections.
+- **Added Neighborhood building to Buildings table**: Neighborhood is referenced in the Housing formula (Section 3.6.1) as providing +4 Housing, but had no formal Buildings table entry. Added Neighborhood (Urbanization civic, 600 Production) with effect "+4 Housing, +1 Amenity." This enables players to exceed the Aqueduct's housing cap for cities reaching higher populations.
+- **Added Sewer building to Buildings table**: Sewer is referenced in the Housing formula (Section 3.6.1) as providing +2 Housing, but had no formal Buildings table entry. Added Sewer (Civil Engineering civic, 300 Production) with effect "+2 Housing."
+
+### Version 3.38 (March 2026)
+- **Fixed Zoo building table entry**: The Zoo row in the Buildings table had "Conservation" misplaced in the Cost column (3rd column) instead of being in the Effect column. The entry now reads `| Zoo | 300 | +2 Amenities from National Parks (Conservation civic required) |`, correctly showing 300 Production as the cost.
+- **Added Iron and Copper resource improvements**: Iron (Antiquity+) and Copper (Antiquity+) strategic resources were defined in the Resources section but had no corresponding improvement entry. Added Mine (Iron) and Mine (Copper) to the resource-specific improvements section, clarifying that both use the standard Mine improvement with +2 Production, and updated the Mine row's Valid Tiles column to explicitly include "Iron tiles" and "Copper tiles" alongside Hills and Mountains.
+
+### Version 3.37 (March 2026)
+- **Added missing Cathedral prerequisite**: Section 3.6.2 Buildings table now notes "Philosophy required" in Cathedral's effect column, since the table has no dedicated prerequisite column. Cathedral should only be buildable after researching Philosophy (matching the Holy Site → Shrine → Temple → Cathedral progression).
+- **Added Zoo building definition**: Zoo building was referenced in the National Parks section (Section 3.5.7) but was absent from the Buildings table. Added Zoo (Conservation civic, 300 Production, Theater Square district) with +2 Amenities from National Parks. Updated National Parks section to reference Zoo explicitly.
+- **Fixed repetitive Suzerain threshold wording**: Section 3.6.3 previously explained the 3-envoy threshold twice with redundant phrasing ("3 envoys to become Suzerain" followed by "The 3-envoy threshold is the automatic trigger"). Consolidated into a single clear statement.
+
+### Version 3.36 (March 2026)
+- **Clarified Suzerain threshold**: Section 3.6.3 now explains that while 3 envoys is the automatic trigger for Suzerain status, a player with 2 envoys can still become Suzerain if no other player has invested more envoys in that city-state (ties broken by first arrival).
+- **Added Era and Difficulty columns to Barbarian Scaling table**: Table now includes both Era and Difficulty columns showing unit strength scaling and spawn intervals for Standard and Deity difficulties across all three ages.
+- **Added Housing formula to City Growth section**: Section 3.6.1 now defines the Housing formula: `BaseHousing = 2 + (CityCenter × 1) + (Palace × 1) + (Aqueduct × 3) + (Sewer × 2) + (Neighborhood × 4)`, plus descriptions of Housing-providing buildings.
+- **Removed redundant Modern Age transition text**: Eliminated duplicated explanation of age transition rules from Section 2.1.3, replacing with a reference to the Exploration Age rules (which already define the full mechanic).
+- **Fixed Walls building row format**: Corrected table formatting from "Walls | Engineering | 120" to proper "Walls | Engineering (120)" format in the Buildings table.
+- **Added Iron Working civic to Civic Tree**: Added Iron Working (Antiquity, 80 Culture, prerequisite: Bronze Working, Inspiration: Improve Iron resource) to Section 3.3.4. Also corrected its prerequisite from "—" to "Bronze Working".
+- **Clarified Fort tile improvement vs Fortification**: Added distinction between the Fort tile improvement (+50% defense bonus) and unit Fortification status (+5% per turn, max +20%). Clarified that Fort tile improvement bonus replaces fortification bonus (50% > 20%).
+- **Added Barbarian camp minimum spacing**: Added requirement that Barbarian camps must be at least 10 tiles apart. If no valid tile exists at minimum distance, the spawn is skipped.
+
+### Version 3.35 (March 2026)
+- **Removed duplicate Quarry tile improvement**: Consolidated two conflicting Quarry entries (lines 795 and 810) into a single unified definition with correct yield (+1 Production, +2 on Stone/Marble) and valid tiles (Stone, Marble, Hills, Mountains).
+- **Fixed Civic naming conflict with Technology**: Renamed "Electricity" civic to "Electrification" in Section 3.3.4 to avoid confusion with the "Electricity" technology in Section 3.3.3. Both had identical names but different prerequisites (Civil Engineering vs. Steam Power).
+- **Completed City Growth Formula**: Added definition for FoodConsumed (`Population × 1`) to the formula in Section 3.6.1, completing the full growth calculation: `FoodSurplus = FoodProduced - (Population × 1)`.
+
+### Version 3.33 (March 2026)
+- **Fixed Celts civilization entry**: Changed "Celts (Faith/Production, Picts unique)" to "Celts (Faith/Production bonus, Picts unique unit)" to match the format of other civilization entries.
+- **Fixed Harappa civilization entry**: Changed "Harappa (Food/Production, Indus River bonus)" to "Harappa (Food/Production bonus, River bonus)" to match the format of other civilization entries.
+- **Fixed World Congress formation requirement**: Changed "after all players have had at least 3 cities" to "after each player has founded at least 3 cities" in Section 2.5.5 for clarity.
+- **Fixed Printing technology prerequisite**: Changed Printing's prerequisite from Medieval Faires to "—" in Section 3.3.2. Medieval Faires is a Civic, not a Technology, so it cannot be a prerequisite for a Technology.
+- **Clarified international trade route culture sharing**: Added "+2 Culture per turn" to the international route description in Section 3.7.1.
+- **Fixed Suzerain of all city-states victory objective**: Clarified that the example refers to the number of city-states spawned (based on setting), not the number of city-state types.
 
 ### Version 3.9 (March 2026)
 - **Added Government Mechanics section**: Section 3.4.3 previously just said "(Section 4.2.4)" — a backward reference. Added a brief paragraph defining what governments do (passive bonuses, policy slots, switching costs) before the UI reference.
@@ -2024,10 +2293,10 @@ World Wonder construction costs are defined in `wonders.json` (see Section 6.4).
   - Pottery: "Build a Farm" → "Build 3 Farms" (farms are buildable without Pottery in this version, as a basic improvement)
   - Writing: "Build a Library" → "Earn 100 Gold" (no building prerequisite)
   - Mathematics: "Build a Monument" → "Train a Scout unit" (Scout available from start)
-  - Construction: "Build a Water Mill" → "Build 3 Forts" (Forts require Military Tactics, but tile Forts can be placed)
+   - Construction: "Build a Water Mill" → "Build 3 Forts" (Fort tile improvement moved from Military Tactics to Engineering to enable Antiquity-era Fort building)
   - Horse Riding: "Build a Stable" → "Build a Pasture" (Pasture requires Animal Husbandry, prerequisite of Horse Riding)
   - Archery: "Build an Archery Range" → "Train an Archer unit" (Archer available from start with Archery tech)
-  - Engineering: "Build an Aqueduct" → "Build a Fort" (Fort is a tile improvement requiring Military Tactics, which Engineering leads to)
+   - Engineering: "Build an Aqueduct" → "Build a Road" (Fort tile improvement moved from Military Tactics to Engineering; Eureka changed to Road which Engineering directly unlocks)
   - Animal Husbandry: unchanged (Pasture requires Animal Husbandry, but alternative trigger kept for consistency)
 - **Fixed circular Exploration-era eurekas**: Changed Astronomy ("Build an Observatory" → "Build a Harbor"), Education ("Build a University" → "Build 3 Libraries"), Military Tactics ("Build a Barracks" → "Train 3 Melee units"), Banking ("Build a Bank" → "Build a Market"), Refrigeration ("Harvest a Whale or Pearls" → "Harvest a Whale resource"), Steel duplicate ("Build a Forge" kept - Metallurgy is prerequisite).
 - **Fixed circular Modern-era eurekas**: Changed Radio ("Build a Broadcast Tower" → "Build a Stock Exchange", Stock Exchange requires Banking Exploration civic), Electricity ("Build a Power Plant" → "Build a Factory", Factory requires Steam Power Exploration tech, prerequisite of Electricity).
@@ -2131,3 +2400,5 @@ World Wonder construction costs are defined in `wonders.json` (see Section 6.4).
 - **Added Colonial Settlement Definition**: Defined colonial settlements as cities on different continents with production bonuses.
 - **Added City Growth Formula**: Defined how food surplus translates to population growth, including housing and amenity interactions.
 - **Added Crisis System Definition**: Defined crisis types, resolution mechanics, and rewards/penalties.
+
+
