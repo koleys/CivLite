@@ -118,7 +118,7 @@ The game is divided into three distinct ages, each representing a major era of h
   2. Control 25+ cities
   3. Control 50%+ of the world's total population (sum of all population across all players' cities)
   4. Win any other victory condition (Domination, Science, Cultural, Religious, or Diplomatic)
-  5. Be Suzerain of all city-states spawned in the game simultaneously. This requires meeting the Suzerain threshold for each city-state simultaneously — must be achieved and maintained, and if a city-state is lost, it must be regained before the objective is complete. Example: 8 city-states on Standard map (scales with city-state count setting in Game Setup: 4-16 range, default 8). See Section 3.6.3 for detailed Suzerain mechanics.
+  5. Be Suzerain of all city-states spawned in the game simultaneously. This requires meeting the Suzerain threshold (typically 3 envoys; 2 envoys may suffice if no competitor has invested more) for each city-state simultaneously — must be achieved and maintained, and if a city-state is lost, it must be regained before the objective is complete. Example: 8 city-states on Standard map (scales with city-state count setting in Game Setup: 4-16 range, default 8). See Section 3.6.3 for detailed Suzerain mechanics.
 
 ### 2.2 Civilization Selection System
 
@@ -721,7 +721,7 @@ The following units are referenced in the Unit Classes table (3.5.1) but not yet
 | **Galleass** | Exploration | Naval Ranged | Upgrade from Galley; ranged naval combat |
 | **Ship of the Line** | Exploration | Naval Ranged | Discovered by Navigation technology; powerful ranged naval |
 | **Steamship** | Exploration | Naval Melee | Requires Steam Power; not affected by wind |
-| **Infantry** | Exploration | Melee | Standard melee unit; unlocked by Military Tactics (note: Infantry becomes prominent in Modern Age but is technically available from Exploration Age) |
+| **Infantry** | Exploration | Melee | Standard melee unit unlocked by Military Tactics; becomes prominent in Modern Age but available from Exploration Age |
 | **Musketman** | Exploration | Melee | Requires Education; replaces Swordsman/Legion |
 | **Samurai** | Exploration | Melee | Japan unique unit; requires Education |
 | **Mechanized Infantry** | Modern | Melee | Requires Combustion; upgrade from Infantry |
@@ -771,7 +771,7 @@ National Parks are part of the Cultural Victory path (Section 2.5.3). Mechanics:
 | | Broadcast Tower | 500 | +3 Culture, +3 Tourism, +1 Great Work of Music slot, +2 Great Musician points |
 | **Holy Site** (District, base: +2 Faith) | Shrine | 50 | +2 Faith, +2 Great Prophet points |
 | | Temple | 140 | +3 Faith, +1 Great Prophet point |
-| | Cathedral | Philosophy (340) | +2 Faith, +2 Culture (from Great Works of Art in Museums), +3 Tourism, +1 Great Work of Art slot |
+| | Cathedral | Philosophy (340) | +2 Faith, +2 Culture from Great Works of Art in Museums, +3 Tourism, +1 Great Work of Art slot |
 | **Encampment** (District, base: +2 Production) | Barracks | 70 | +15 XP to all units built, +1 Military Policy slot |
 | | Armory | 200 | Unlocks Level 1 promotions |
 | | Military Academy | 420 | +30 XP to all units built |
@@ -2061,11 +2061,16 @@ World Wonder construction costs are defined in `wonders.json` (see Section 6.4).
 
 ---
 
-*Document Version: 3.68*  
-*Last Updated: March 2026 (Review Cycle 49)*  
+*Document Version: 3.69*  
+*Last Updated: March 2026 (Review Cycle 50)*  
 *Project: CivLite - Browser-Based Civilization Clone*
 
 ## Change Log
+
+### Version 3.69 (March 2026)
+- **Fixed Suzerain threshold inconsistency in Legacy Path objective**: Section 2.1.3's objective 5 stated "requires 3 envoys invested per city-state" but Section 3.6.3's detailed Suzerain mechanics explain that 2 envoys may suffice if no competitor has invested more. Clarified the objective wording to reference the threshold system defined in Section 3.6.3, eliminating the contradiction.
+- **Fixed Infantry era classification wording**: Section 3.5.6's Infantry entry used parenthetical clarification that was confusing. Simplified to: "Standard melee unit unlocked by Military Tactics; becomes prominent in Modern Age but available from Exploration Age."
+- **Clarified Cathedral building culture source**: Removed parentheses from "from Great Works of Art in Museums" to clarify that Cathedral itself does not provide culture — only Great Works of Art stored in Museums provide the culture bonus.
 
 ### Version 3.68 (March 2026)
 - **Fixed Cathedral building table entry format**: Section 3.6.2 listed Cathedral with "Philosophy | 340" as separate Prerequisite and Cost columns, but the table format combines prerequisite and cost in the same column (e.g., "Writing (60)" for Library, "Conservation (300)" for Zoo). Changed Cathedral to "Philosophy (340)" to match the established format for all other buildings in the table.
