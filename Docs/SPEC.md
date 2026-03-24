@@ -1894,18 +1894,20 @@ World Wonder construction costs are defined in `wonders.json` (see Section 6.4).
 
 ## 8. Development Phases
 
-### Phase 1: Foundation (Months 1-4) - MVP Milestone
-- [ ] Project setup (Vite + React + TypeScript + Zustand)
-- [ ] Canvas 2D map renderer (Lite quality baseline)
-- [ ] Tile system with terrain and basic resources
-- [ ] Camera controls (pan/zoom) + minimap
-- [ ] Pathfinding (A* implementation)
-- [ ] Turn system infrastructure (player → AI → next)
-- [ ] Basic unit movement and selection
-- [ ] City placement and city panel
-- [ ] Tile improvement system (farm, mine, quarry)
-- [ ] Save/Load with IndexedDB
-- [ ] **MVP**: Can play a single Antiquity Age game with basic mechanics
+### Phase 1: Foundation (Months 1-4) - MVP Milestone ✅ IMPLEMENTED
+- [x] Project setup (Vite + React + TypeScript + Zustand)
+- [x] Canvas 2D map renderer (Lite quality baseline)
+- [x] Tile system with terrain and basic resources
+- [x] Camera controls (pan/zoom) + minimap
+- [x] Pathfinding (A* implementation)
+- [x] Turn system infrastructure (player → AI → next)
+- [x] Basic unit movement and selection
+- [x] City placement and city panel
+- [x] Tile improvement system (farm, mine, quarry)
+- [x] Save/Load with IndexedDB
+- [x] **MVP**: Can play a single Antiquity Age game with basic mechanics
+
+*See `Docs/PHASE1_IMPLEMENTATION.md` for full implementation details.*
 
 ### Phase 2: Core Gameplay (Months 5-7)
 - [ ] Combat system (damage formula, terrain bonuses)
@@ -1959,18 +1961,18 @@ World Wonder construction costs are defined in `wonders.json` (see Section 6.4).
 
 ## 9. Acceptance Criteria
 
-### 9.1 Core Functionality
-- [ ] Game can be started from main menu
-- [ ] Map generates correctly for all sizes
-- [ ] Units can move on valid tiles
-- [ ] Combat resolves correctly with terrain/modifier bonuses
-- [ ] Cities can be built, grown, and managed
-- [ ] Technology progresses through tree with Eureka bonuses
-- [ ] All victory conditions are achievable
-- [ ] Game saves and loads without corruption
-- [ ] Fog of war displays correctly by difficulty
+### 9.1 Core Functionality (Phase 1 Complete)
+- [x] Game can be started from main menu
+- [x] Map generates correctly for all sizes
+- [x] Units can move on valid tiles
+- [ ] Combat resolves correctly with terrain/modifier bonuses (Phase 2)
+- [x] Cities can be built (founding only), grown, and managed
+- [ ] Technology progresses through tree with Eureka bonuses (Phase 2)
+- [ ] All victory conditions are achievable (Phase 4)
+- [x] Game saves and loads without corruption
+- [ ] Fog of war displays correctly by difficulty (Phase 2)
 
-### 9.2 AI Opponent
+### 9.2 AI Opponent (Phase 3)
 - [ ] OpenRouter API key stored in localStorage (Base64)
 - [ ] LLM responds with valid game actions
 - [ ] Model fallback chain works (deepseek → llama → qwen → built-in)
