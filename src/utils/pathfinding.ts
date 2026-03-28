@@ -170,6 +170,9 @@ export function getReachableTiles(
       const tile = map.tiles.get(neighborKey);
       if (!tile) continue;
 
+      if (tile.terrain === 'ocean') continue;
+      if (tile.terrain === 'mountain') continue;
+
       const moveCost = getMoveCost(tile);
       const remainingMovement = current.movement - moveCost;
 

@@ -20,6 +20,7 @@ export interface AIAction {
 
 export interface AIConfig {
   player: Player;
+  allPlayers: Player[];
   map: MapData;
   difficulty: Difficulty;
   age: GameAge;
@@ -265,7 +266,7 @@ export class RandomAI {
 
   private getAllEnemyUnits(playerId: number): Unit[] {
     const enemies: Unit[] = [];
-    for (const p of this.config.player ? [this.config.player] : []) {
+    for (const p of this.config.allPlayers) {
       if (p.id !== playerId && p.id !== -1) {
         enemies.push(...p.units);
       }
@@ -332,7 +333,7 @@ export class RandomAI {
         }
 
         let tooClose = false;
-        for (const p of this.config.player ? [this.config.player] : []) {
+        for (const p of this.config.allPlayers) {
           for (const city of p.cities) {
             const distance = Math.abs(nx - city.x) + Math.abs(ny - city.y);
             if (distance < 3) {

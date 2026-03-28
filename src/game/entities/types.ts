@@ -68,7 +68,16 @@ export type UnitType =
   | 'fighter' | 'bomber' | 'jet_fighter'
   | 'musketman' | 'samurai' | 'infantry' | 'tank'
   | 'catapult' | 'cannon' | 'artillery'
-  | 'settler' | 'great_general' | 'great_admiral';
+  | 'great_general' | 'great_admiral' | 'nuclear_device'
+  | 'missionary' | 'apostle' | 'crossbowman' | 'charioteer' | 'cavalry'
+  | 'cuirassier' | 'galleass' | 'ship_of_the_line'
+  | 'spearman' | 'pikeman' | 'rifleman' | 'trireme' | 'frigate' | 'battleship' | 'submarine';
+
+export interface UnitPromotions {
+  level: number;
+  xp: number;
+  promotions: string[];
+}
 
 export interface Unit {
   id: string;
@@ -83,6 +92,8 @@ export interface Unit {
   strength: number;
   strengthBase: number;
   hasActed: boolean;
+  promotions?: UnitPromotions;
+  fortificationTurns?: number;
 }
 
 export type PlayerId = number;
@@ -108,7 +119,7 @@ export interface Player {
 
 export type GamePhase = 'menu' | 'setup' | 'playing' | 'paused' | 'ended';
 export type GameSpeed = 'online' | 'standard' | 'marathon';
-export type MapSize = 'duel' | 'small' | 'standard' | 'large' | 'huge';
+export type MapSize = 'tiny' | 'duel' | 'small' | 'standard' | 'large' | 'huge';
 export type Difficulty = 'beginner' | 'easy' | 'standard' | 'deity';
 
 export interface VictorySettings {
@@ -143,6 +154,17 @@ export interface Camera {
   zoom: number;
 }
 
+export interface CityStateData {
+  id: string;
+  name: string;
+  type: string;
+  x: number;
+  y: number;
+  bonus: string;
+  suzerain: number | null;
+  envoys: Record<number, number>;
+}
+
 export interface GameState {
   phase: GamePhase;
   turn: number;
@@ -155,6 +177,8 @@ export interface GameState {
   selectedUnit: UnitId | null;
   selectedTile: TileCoord | null;
   showTileYields: boolean;
+  nextId: number;
+  cityStates: CityStateData[];
 }
 
 export interface MapData {

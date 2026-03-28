@@ -208,13 +208,7 @@ export class EraSystem {
 
   selectLegacyObjectives(objectiveIds: string[]): void {
     if (objectiveIds.length !== 3) return;
-
     this.legacyPath.selected = objectiveIds;
-    this.legacyPath.objectives.forEach((obj) => {
-      if (objectiveIds.includes(obj.id)) {
-        obj.completed = true;
-      }
-    });
   }
 
   updateObjectiveProgress(objectiveId: string, progress: number): void {
@@ -244,7 +238,9 @@ export class EraSystem {
       this.legacyPath.objectives.every((o) => o.completed);
   }
 
-  transitionAge(): { newAge: GameAge; hasAgeVictory: boolean; penalty: number } {
+  transitionAge(turn: number): { newAge: GameAge; hasAgeVictory: boolean; penalty: number } | null {
+    if (this.age === 'modern') return null; // Modern Age ends only via victory condition
+
     const hasVictory = this.hasAgeVictory();
     let penalty = 0;
     const completedCount = this.getCompletedObjectives();
@@ -253,7 +249,7 @@ export class EraSystem {
       this.eraScore += 50;
     }
 
-    if (this.shouldForcedTransition(this.player.score) && completedCount < 2) {
+    if (this.shouldForcedTransition(turn) && completedCount < 2) {
       penalty = 20;
       this.autoSelectObjectives();
     }

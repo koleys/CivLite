@@ -1,4 +1,7 @@
 import type { Player, Unit, GameSettings, MapData, UnitId, TileCoord } from '@/game/entities/types';
+import { getReachableTiles } from '@/utils/pathfinding';
+import { processCityGrowth, calculateCityYields } from './CityGrowth';
+import { TechSystem, TECH_COST_MULTIPLIERS } from './TechSystem';
 
 export interface TurnResult {
   turnNumber: number;
@@ -18,30 +21,44 @@ export interface GameAction {
 }
 
 export interface GameEvent {
-  type: 'UNIT_MOVED' | 'UNIT_DIED' | 'CITY_FOUNDED' | 'COMBAT_OCCURRED' | 'TECH_COMPLETED' | 'VICTORY';
+  type: 'UNIT_MOVED' | 'UNIT_DIED' | 'CITY_FOUNDED' | 'PRODUCTION_COMPLETED' | 'COMBAT_OCCURRED' | 'TECH_COMPLETED' | 'VICTORY' | 'TURN_STARTED' | 'TURN_ENDED' | 'PLAYER_TURN_ENDED' | 'CITY_GREW' | 'AGE_TRANSITION' | 'ERA_SCORE_GAINED' | 'BARBARIAN_SPAWNED' | 'UNIT_PROMOTED' | 'RELIGION_FOUNDED';
   message: string;
   data?: Record<string, unknown>;
 }
 
 export class GameEngine {
   private players: Player[];
+  private settings: GameSettings;
   private currentPlayerIndex: number;
   private turnNumber: number;
   private map: MapData;
   private actions: GameAction[];
   private events: GameEvent[];
+  private techSystems: Map<number, TechSystem>;
 
   constructor(
     players: Player[],
-    _settings: GameSettings,
+    settings: GameSettings,
     map: MapData
   ) {
     this.players = players;
+    this.settings = settings;
     this.currentPlayerIndex = 0;
     this.turnNumber = 1;
     this.map = map;
     this.actions = [];
     this.events = [];
+    this.techSystems = new Map();
+
+    for (const player of players) {
+      this.techSystems.set(
+        player.id,
+        new TechSystem(player, {
+          gameSpeed: settings.gameSpeed,
+          difficulty: settings.difficulty,
+        })
+      );
+    }
   }
 
   getCurrentPlayer(): Player {
@@ -49,7 +66,7 @@ export class GameEngine {
   }
 
   getCurrentPlayerId(): number {
-    return this.currentPlayerIndex;
+    return this.players[this.currentPlayerIndex].id;
   }
 
   getTurnNumber(): number {
@@ -118,8 +135,8 @@ export class GameEngine {
 
   private endPlayerTurn(): void {
     this.events.push({
-      type: 'UNIT_MOVED',
-      message: `Player ${this.currentPlayerIndex} ended turn`,
+      type: 'PLAYER_TURN_ENDED',
+      message: `Player ${this.currentPlayerIndex} ended their turn`,
     });
   }
 
@@ -128,6 +145,11 @@ export class GameEngine {
     this.processCityProduction();
     this.processGrowth();
     this.processResearch();
+
+    this.events.push({
+      type: 'TURN_ENDED',
+      message: `Player ${this.currentPlayerIndex} turn ended`,
+    });
 
     this.currentPlayerIndex++;
 
@@ -151,9 +173,28 @@ export class GameEngine {
   private processCityProduction(): void {
     const player = this.getCurrentPlayer();
     player.cities.forEach(city => {
-      if (city.currentProduction) {
-        const production = 3;
-        city.currentProduction.progress += production;
+      if (!city.currentProduction) return;
+
+      const yields = calculateCityYields(city, this.map);
+      const productionPerTurn = yields.totalYields.production;
+      city.currentProduction.progress += productionPerTurn;
+
+      if (city.currentProduction.progress >= city.currentProduction.cost) {
+        this.events.push({
+          type: 'PRODUCTION_COMPLETED',
+          message: `${player.name}'s city ${city.name} completed ${city.currentProduction.name}`,
+          data: {
+            cityId: city.id,
+            production: city.currentProduction.name,
+            type: city.currentProduction.type,
+          },
+        });
+        // Move to next in queue or clear
+        if (city.buildQueue.length > 0) {
+          city.currentProduction = city.buildQueue.shift()!;
+        } else {
+          city.currentProduction = null;
+        }
       }
     });
   }
@@ -161,29 +202,52 @@ export class GameEngine {
   private processGrowth(): void {
     const player = this.getCurrentPlayer();
     player.cities.forEach(city => {
-      const foodSurplus = 2;
-      city.foodStockpile += foodSurplus;
-
-      if (city.foodStockpile >= city.foodForGrowth) {
-        city.population += 1;
-        city.foodStockpile = city.foodStockpile - city.foodForGrowth;
-        city.foodForGrowth = city.population * 2 + 4;
-        city.housingUsed = city.population;
+      const result = processCityGrowth(city, this.map, this.settings.gameSpeed);
+      if (result.grew) {
+        this.events.push({
+          type: 'CITY_GREW',
+          message: `${city.name} grew to population ${city.population}`,
+          data: { cityId: city.id, population: city.population },
+        });
       }
     });
   }
 
   private processResearch(): void {
     const player = this.getCurrentPlayer();
-    if (player.currentResearch) {
-      const sciencePerTurn = 2;
-      player.currentResearch.progress += sciencePerTurn;
+    if (!player.currentResearch) return;
+
+    const techSystem = this.techSystems.get(player.id);
+    if (!techSystem) return;
+
+    // Sync tech system's current research with player state
+    if (!techSystem.getCurrentResearch() ||
+        techSystem.getCurrentResearch()?.techId !== player.currentResearch.techId) {
+      techSystem.setCurrentResearch({
+        techId: player.currentResearch.techId,
+        progress: player.currentResearch.progress,
+        eurekaTriggered: false,
+        turnsRemaining: 0,
+      });
+    }
+
+    const result = techSystem.processTurn();
+    player.currentResearch.progress = techSystem.getCurrentResearch()?.progress ?? player.currentResearch.progress;
+
+    if (result.completed) {
+      this.events.push({
+        type: 'TECH_COMPLETED',
+        message: `${player.name} researched ${result.completed}`,
+        data: { techId: result.completed, playerId: player.id },
+      });
+      player.technologies.add(result.completed);
+      player.currentResearch = null;
     }
   }
 
   private processEndOfRound(): void {
     this.events.push({
-      type: 'UNIT_MOVED',
+      type: 'TURN_STARTED',
       message: `Turn ${this.turnNumber} started`,
     });
   }
@@ -208,22 +272,19 @@ export class GameEngine {
   getValidMoves(unit: Unit): TileCoord[] {
     if (!this.canUnitMove(unit)) return [];
 
+    const reachable = getReachableTiles(
+      this.map,
+      { x: unit.x, y: unit.y },
+      unit.movement
+    );
+
     const moves: TileCoord[] = [];
-    const range = Math.floor(unit.movement);
-
-    for (let dy = -range; dy <= range; dy++) {
-      for (let dx = -range; dx <= range; dx++) {
-        if (dx === 0 && dy === 0) continue;
-
-        const x = unit.x + dx;
-        const y = unit.y + dy;
-
-        if (x >= 0 && x < this.map.width && y >= 0 && y < this.map.height) {
-          const tile = this.map.tiles.get(`${x},${y}`);
-          if (tile && tile.terrain !== 'mountain') {
-            moves.push({ x, y });
-          }
-        }
+    for (const key of reachable) {
+      if (key === `${unit.x},${unit.y}`) continue;
+      const [x, y] = key.split(',').map(Number);
+      const tile = this.map.tiles.get(key);
+      if (tile && tile.terrain !== 'ocean' && tile.terrain !== 'mountain') {
+        moves.push({ x, y });
       }
     }
 
@@ -235,19 +296,25 @@ export class GameEngine {
     if (!tile) return false;
     if (tile.cityId) return false;
     if (settler.type !== 'settler') return false;
+    if (tile.terrain === 'ocean' || tile.terrain === 'mountain') return false;
 
     const minDistance = 3;
     for (const player of this.players) {
       for (const city of player.cities) {
         const dx = Math.abs(city.x - settler.x);
         const dy = Math.abs(city.y - settler.y);
-        if (dx < minDistance && dy < minDistance) {
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance < minDistance) {
           return false;
         }
       }
     }
 
     return true;
+  }
+
+  getTechSystem(playerId: number): TechSystem | undefined {
+    return this.techSystems.get(playerId);
   }
 
   addEvent(event: GameEvent): void {
@@ -270,3 +337,7 @@ export function createGameEngine(
 ): GameEngine {
   return new GameEngine(players, settings, map);
 }
+
+// Re-export for convenience
+export { TECH_COST_MULTIPLIERS };
+

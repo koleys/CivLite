@@ -15,6 +15,8 @@ export interface VictoryContext {
   turn: number;
   spaceRaceProgress?: SpaceRaceProgress;
   worldCongress?: WorldCongressState;
+  /** Maps player ID → fraction of foreign city population following that player's religion (0–1). */
+  playerReligionStats?: Record<number, { foreignFollowerRatio: number }>;
 }
 
 export interface SpaceRaceProgress {
@@ -95,32 +97,25 @@ export class VictorySystem {
   }
 
   private checkDominationVictory(player: Player, context: VictoryContext): boolean {
-    const remainingPlayers = context.players.filter(p => p.id !== player.id && p.cities.length > 0);
-    
-    if (remainingPlayers.length === 0) return false;
+    const otherPlayers = context.players.filter(p => p.id !== player.id && p.id !== -1);
 
-    for (const otherPlayer of remainingPlayers) {
-      if (otherPlayer.id === player.id) continue;
-      
-      const capital = otherPlayer.cities.find(c => c.isOriginalCapital);
-      if (!capital) continue;
+    if (otherPlayers.length === 0) return false;
 
-      const isVassal = false;
-      if (isVassal) continue;
+    for (const otherPlayer of otherPlayers) {
+      const originalCapital = otherPlayer.cities.find(c => c.isOriginalCapital);
+      if (!originalCapital) continue;
 
-      const tile = context.players[0]?.cities[0] ? { x: capital.x, y: capital.y } : null;
-      if (!tile) continue;
+      const playerControlsCapital = player.cities.some(
+        c => c.x === originalCapital.x && c.y === originalCapital.y
+      );
 
-      const playerControlsCapital = player.cities.some(c => c.x === tile.x && c.y === tile.y);
       if (!playerControlsCapital) {
         return false;
       }
     }
 
     const playerCapital = player.cities.find(c => c.isOriginalCapital);
-    if (!playerCapital) return false;
-
-    return true;
+    return playerCapital !== undefined;
   }
 
   private checkScienceVictory(player: Player, context: VictoryContext): boolean {
@@ -154,22 +149,16 @@ export class VictorySystem {
     if (context.age === 'modern') return false;
 
     const otherPlayers = context.players.filter(p => p.id !== player.id && p.cities.length > 0);
+    if (otherPlayers.length === 0) return false;
 
-    for (const otherPlayer of otherPlayers) {
-      let totalFollowers = 0;
-      let totalPopulation = 0;
+    // If no religion stats are provided, religious victory is not yet achievable
+    if (!context.playerReligionStats) return false;
 
-      for (const city of otherPlayer.cities) {
-        totalPopulation += city.population;
-      }
+    const stats = context.playerReligionStats[player.id];
+    if (!stats) return false;
 
-      const followerRatio = totalPopulation > 0 ? totalFollowers / totalPopulation : 0;
-      if (followerRatio <= 0.5) {
-        return false;
-      }
-    }
-
-    return true;
+    // Player's religion must cover >50% of ALL foreign city population
+    return stats.foreignFollowerRatio > 0.5;
   }
 
   private checkDiplomaticVictory(_player: Player, context: VictoryContext): boolean {
