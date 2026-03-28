@@ -190,6 +190,26 @@ export const TECHNOLOGIES: Record<string, Technology> = {
     eurekaBonus: 0.5,
     unlocks: ['horse_riding'],
   },
+  universities: {
+    id: 'universities',
+    name: 'Universities',
+    era: 'exploration',
+    cost: 220,
+    prerequisites: ['education'],
+    eurekaTrigger: 'Build a University',
+    eurekaBonus: 0.5,
+    unlocks: [],
+  },
+  refining: {
+    id: 'refining',
+    name: 'Refining',
+    era: 'exploration',
+    cost: 230,
+    prerequisites: ['steel'],
+    eurekaTrigger: 'Discover an Oil resource',
+    eurekaBonus: 0.5,
+    unlocks: ['combustion', 'plastics'],
+  },
   paper: {
     id: 'paper',
     name: 'Paper',
@@ -579,13 +599,14 @@ export class TechSystem {
   }
 
   getSciencePerTurn(): number {
-    const cityCount = this.player.cities.length;
-    let science = cityCount * 2;
-
-    const goldMultiplier = this.player.gold > 100 ? 1.1 : 1.0;
-    science = Math.floor(science * goldMultiplier);
-
-    return science;
+    let science = 0;
+    for (const city of this.player.cities) {
+      science += 1; // base per city
+      if (city.buildings.includes('library')) science += 2;
+      if (city.buildings.includes('university')) science += 4;
+      if (city.buildings.includes('research_lab')) science += 6;
+    }
+    return Math.max(1, science);
   }
 
   getAvailableTechnologies(): string[] {

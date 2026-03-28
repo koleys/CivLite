@@ -3,7 +3,7 @@ import type { Unit, UnitType, Tile, Player } from '@/game/entities/types';
 export const MAX_MILITARY_STACK = 3;
 export const MAX_CIVILIAN_STACK = 1;
 
-export const CIVILIAN_UNITS: readonly UnitType[] = ['settler', 'scout'] as const;
+export const CIVILIAN_UNITS: readonly UnitType[] = ['settler'] as const;
 
 export const isCivilianUnit = (type: UnitType): boolean => {
   return CIVILIAN_UNITS.includes(type);
@@ -34,11 +34,6 @@ export function canStackUnit(
     const civilianCount = unitsOnTile.filter((u) => isCivilianUnit(u.type)).length;
     if (civilianCount >= MAX_CIVILIAN_STACK) {
       return { allowed: false, reason: `Maximum ${MAX_CIVILIAN_STACK} civilian unit(s) per tile` };
-    }
-
-    const militaryCount = unitsOnTile.filter((u) => isMilitaryUnit(u.type)).length;
-    if (militaryCount === 0) {
-      return { allowed: false, reason: 'Civilian units must be escorted by at least one military unit' };
     }
   }
 

@@ -23,6 +23,7 @@ export interface TradeYields {
 export interface TradeConfig {
   map: MapData;
   age: GameAge;
+  allPlayers?: Player[];
 }
 
 export class TradeSystem {
@@ -104,12 +105,21 @@ export class TradeSystem {
   }
 
   private findPlayerByCity(cityId: string): number | undefined {
+    // First check allPlayers (most accurate — finds owner by scanning city lists)
+    if (this.config.allPlayers) {
+      for (const player of this.config.allPlayers) {
+        if (player.cities.some(c => c.id === cityId)) {
+          return player.id;
+        }
+      }
+    }
+    // Fallback: check existing routes (works for re-established routes)
     for (const route of this.tradeRoutes) {
       if (route.destinationCityId === cityId) {
         return route.destinationPlayerId;
       }
     }
-    return this.player.id;
+    return undefined;
   }
 
   private determineRouteType(

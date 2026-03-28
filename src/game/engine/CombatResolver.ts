@@ -1,4 +1,4 @@
-import type { Unit, Tile, Player, MapData } from '@/game/entities/types';
+import type { Unit, Tile, Player, MapData, UnitPromotions } from '@/game/entities/types';
 import { isMilitaryUnit } from './UnitStacking';
 
 export interface CombatResult {
@@ -57,18 +57,14 @@ export type PromotionType =
   | 'embark'
   | 'amphibious';
 
-export interface UnitPromotions {
-  level: number;
-  xp: number;
-  promotions: PromotionType[];
-}
+// Re-export UnitPromotions from types for convenience
+export type { UnitPromotions };
 
 export function getUnitPromotions(unit: Unit): UnitPromotions {
-  return (unit as Unit & { promotions?: UnitPromotions }).promotions ?? {
-    level: 0,
-    xp: 0,
-    promotions: [],
-  };
+  if (!unit.promotions) {
+    unit.promotions = { level: 0, xp: 0, promotions: [] };
+  }
+  return unit.promotions;
 }
 
 export function getCombatStrength(
@@ -101,7 +97,7 @@ export function getCombatStrength(
   const terrainBonus = getTerrainBonus(tile);
   strength = Math.floor(strength * (1 + terrainBonus));
 
-  const fortificationTurns = (unit as Unit & { fortificationTurns?: number }).fortificationTurns ?? 0;
+  const fortificationTurns = unit.fortificationTurns ?? 0;
   if (fortificationTurns > 0 && !isAttacker) {
     const fortBonus = 1 + Math.min(fortificationTurns * 0.05, 0.2);
     strength = Math.floor(strength * fortBonus);
@@ -271,13 +267,13 @@ export function applyCombatDamage(
 }
 
 function updateUnitLevel(unit: Unit): void {
-  const promotions = getUnitPromotions(unit);
+  const promotions = getUnitPromotions(unit); // initializes unit.promotions if missing
   const xpThresholds = [10, 30, 60, 100, 150];
 
   for (let i = xpThresholds.length - 1; i >= 0; i--) {
     if (promotions.xp >= xpThresholds[i]) {
       promotions.level = i + 1;
-      break;
+      return;
     }
   }
 }
