@@ -64,8 +64,8 @@ describe('Unit Stacking', () => {
       expect(isCivilianUnit('settler')).toBe(true);
     });
 
-    it('should identify scout as civilian', () => {
-      expect(isCivilianUnit('scout')).toBe(true);
+    it('should identify scout as military (not civilian)', () => {
+      expect(isCivilianUnit('scout')).toBe(false);
     });
 
     it('should not identify warrior as civilian', () => {
@@ -141,7 +141,7 @@ describe('Unit Stacking', () => {
       expect(result.allowed).toBe(true);
     });
 
-    it('should prevent civilian without military escort', () => {
+    it('should allow civilian (settler) without military escort', () => {
       const tile = createMockTile(5, 5);
       tile.units = [];
       
@@ -151,22 +151,20 @@ describe('Unit Stacking', () => {
       const settler = createMockUnit('settler1', 'settler', 0);
       const result = canStackUnit(settler, tile, players);
 
-      expect(result.allowed).toBe(false);
-      expect(result.reason).toContain('escorted');
+      expect(result.allowed).toBe(true);
     });
 
-    it('should prevent stacking multiple civilians', () => {
+    it('should prevent stacking multiple settlers (civilian limit)', () => {
       const tile = createMockTile(5, 5);
       tile.units = ['settler1'];
       
       const player = createMockPlayer(0, [
         createMockUnit('settler1', 'settler', 0),
-        createMockUnit('scout1', 'scout', 0),
       ]);
       const players = [player];
 
-      const scout = createMockUnit('scout1', 'scout', 0);
-      const result = canStackUnit(scout, tile, players);
+      const settler2 = createMockUnit('settler2', 'settler', 0);
+      const result = canStackUnit(settler2, tile, players);
 
       expect(result.allowed).toBe(false);
     });
@@ -214,7 +212,7 @@ describe('Unit Stacking', () => {
   });
 
   describe('getCivilianCount', () => {
-    it('should count only civilian units', () => {
+    it('should count only civilian units (settler only, not scout)', () => {
       const tile = createMockTile(5, 5);
       const player = createMockPlayer(0, [
         createMockUnit('unit1', 'warrior', 0),
@@ -225,7 +223,7 @@ describe('Unit Stacking', () => {
       const players = [player];
 
       const count = getCivilianCount(tile, players);
-      expect(count).toBe(2);
+      expect(count).toBe(1); // only settler; scout is now military
     });
   });
 
