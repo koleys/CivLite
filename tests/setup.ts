@@ -1,5 +1,8 @@
 import '@testing-library/jest-dom';
+import { enableMapSet } from 'immer';
 import { vi } from 'vitest';
+
+enableMapSet();
 
 beforeEach(() => {
   vi.clearAllMocks();

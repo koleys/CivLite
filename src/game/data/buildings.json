@@ -1,0 +1,23 @@
+{
+  "granary": { "name": "Granary", "cost": 40, "food": 2, "era": "antiquity" },
+  "library": { "name": "Library", "cost": 80, "science": 2, "era": "antiquity" },
+  "shrine": { "name": "Shrine", "cost": 60, "faith": 1, "era": "antiquity" },
+  "temple": { "name": "Temple", "cost": 100, "culture": 2, "faith": 2, "era": "antiquity" },
+  "market": { "name": "Market", "cost": 100, "gold": 2, "era": "antiquity" },
+  "walls": { "name": "Walls", "cost": 50, "era": "antiquity" },
+  "monument": { "name": "Monument", "cost": 40, "culture": 1, "era": "antiquity" },
+  "aqueduct": { "name": "Aqueduct", "cost": 140, "era": "antiquity" },
+  "university": { "name": "University", "cost": 180, "science": 4, "era": "exploration" },
+  "workshop": { "name": "Workshop", "cost": 120, "production": 2, "era": "exploration" },
+  "bank": { "name": "Bank", "cost": 160, "gold": 4, "era": "exploration" },
+  "sewer": { "name": "Sewer", "cost": 200, "era": "exploration" },
+  "arena": { "name": "Arena", "cost": 100, "culture": 1, "era": "exploration" },
+  "factory": { "name": "Factory", "cost": 240, "production": 3, "era": "modern" },
+  "research_lab": { "name": "Research Lab", "cost": 400, "science": 6, "era": "modern" },
+  "broadcast_center": { "name": "Broadcast Center", "cost": 300, "culture": 4, "era": "modern" },
+  "neighborhood": { "name": "Neighborhood", "cost": 220, "era": "modern" },
+  "aerodrome": { "name": "Aerodrome", "cost": 280, "era": "modern" },
+  "airport": { "name": "Airport", "cost": 360, "era": "modern" },
+  "spaceport": { "name": "Spaceport", "cost": 600, "era": "modern" },
+  "launch_pad": { "name": "Launch Pad", "cost": 800, "era": "modern" }
+}

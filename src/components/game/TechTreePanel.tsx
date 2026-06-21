@@ -1,5 +1,7 @@
+import { useRef, useEffect, useCallback } from 'react';
 import { useGameStore } from '@/store/gameStore';
-import { TECHNOLOGIES } from '@/game/engine/TechSystem';
+import { TECHNOLOGIES, TECH_COST_MULTIPLIERS } from '@/game/engine/TechSystem';
+import { getUnlocks } from '@/game/engine/UnlockManager';
 
 const ERA_LABEL: Record<string, string> = {
   antiquity:   '🏛 Antiquity',
@@ -11,10 +13,21 @@ interface TechTreePanelProps {
   onClose: () => void;
 }
 
+function unlockSummary(techId: string): string[] {
+  const u = getUnlocks(techId);
+  const items: string[] = [];
+  for (const unit of u.unitTypes) items.push(unit.replace(/_/g, ' '));
+  for (const b of u.buildings) items.push(b.replace(/_/g, ' '));
+  for (const i of u.improvements) items.push(i.replace(/_/g, ' '));
+  return items;
+}
+
 export function TechTreePanel({ onClose }: TechTreePanelProps) {
   const players      = useGameStore(s => s.players);
   const setResearch  = useGameStore(s => s.setResearch);
   const human        = players.find(p => p.id === 0);
+  const speed        = useGameStore(s => s.settings.gameSpeed);
+  const svgRef       = useRef<SVGSVGElement>(null);
 
   if (!human) return null;
 
@@ -38,9 +51,73 @@ export function TechTreePanel({ onClose }: TechTreePanelProps) {
 
   const progressPct = (techId: string) => {
     if (researching?.techId !== techId) return 0;
-    const cost = TECHNOLOGIES[techId]?.cost ?? 1;
+    const cost = Math.floor((TECHNOLOGIES[techId]?.cost ?? 1) * TECH_COST_MULTIPLIERS[speed]);
     return Math.min(100, Math.round((researching.progress / cost) * 100));
   };
+
+  const statusColor = (s: string) => {
+    switch (s) {
+      case 'done':      return '#2ecc71';
+      case 'active':    return '#74b9ff';
+      case 'available': return '#f1c40f';
+      default:          return '#555';
+    }
+  };
+
+  // Draw SVG prerequisite lines between tech cards
+  const drawLines = useCallback(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const container = svg.parentElement;
+    if (!container) return;
+    svg.innerHTML = '';
+
+    for (const tech of Object.values(TECHNOLOGIES)) {
+      for (const prereqId of tech.prerequisites) {
+        const fromEl = container.querySelector(`[data-tech-id="${prereqId}"]`) as HTMLElement;
+        const toEl   = container.querySelector(`[data-tech-id="${tech.id}"]`) as HTMLElement;
+        if (!fromEl || !toEl) continue;
+
+        const svgRect = svg.getBoundingClientRect();
+        const fromRect = fromEl.getBoundingClientRect();
+        const toRect   = toEl.getBoundingClientRect();
+
+        const x1 = fromRect.left + fromRect.width / 2 - svgRect.left;
+        const y1 = fromRect.top  + fromRect.height   - svgRect.top;
+        const x2 = toRect.left   + toRect.width / 2  - svgRect.left;
+        const y2 = toRect.top                        - svgRect.top;
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', String(x1));
+        line.setAttribute('y1', String(y1));
+        line.setAttribute('x2', String(x2));
+        line.setAttribute('y2', String(y2));
+
+        const fromStatus = getStatus(prereqId);
+        const toStatus   = getStatus(tech.id);
+        let color = 'rgba(255,255,255,0.15)';
+        if (fromStatus === 'done' && (toStatus === 'done' || toStatus === 'active' || toStatus === 'available')) {
+          color = 'rgba(46,204,113,0.5)';
+        } else if (fromStatus === 'done' && toStatus === 'locked') {
+          color = 'rgba(255,255,255,0.08)';
+        } else if (toStatus === 'active') {
+          color = 'rgba(116,185,255,0.4)';
+        } else if (toStatus === 'available') {
+          color = 'rgba(241,196,15,0.35)';
+        }
+        line.setAttribute('stroke', color);
+        line.setAttribute('stroke-width', '2');
+        line.setAttribute('stroke-linecap', 'round');
+        svg.appendChild(line);
+      }
+    }
+  }, [known, researching]);
+
+  // Redraw lines after render
+  useEffect(() => {
+    const timer = setTimeout(drawLines, 50);
+    return () => clearTimeout(timer);
+  }, [drawLines, researching, known.size]);
 
   return (
     <div className="tech-overlay" role="dialog" aria-label="Technology Tree">
@@ -61,14 +138,28 @@ export function TechTreePanel({ onClose }: TechTreePanelProps) {
           {eras.map(era => (
             <section key={era} className="tech-era-section">
               <h3 className="tech-era-title">{ERA_LABEL[era]}</h3>
-              <div className="tech-grid">
+              <div className="tech-grid" style={{ position: 'relative' }}>
+                <svg
+                  ref={svgRef}
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    width: '100%',
+                    height: '100%',
+                    pointerEvents: 'none',
+                    zIndex: 0,
+                  }}
+                />
                 {(byEra[era] ?? []).map(tech => {
                   const status = getStatus(tech.id);
                   const pct    = progressPct(tech.id);
+                  const unlocks = unlockSummary(tech.id);
                   return (
                     <button
                       key={tech.id}
+                      data-tech-id={tech.id}
                       className={`tech-card tech-card--${status}`}
+                      style={{ position: 'relative', zIndex: 1 }}
                       onClick={() => {
                         if (status === 'available') {
                           setResearch(tech.id);
@@ -84,6 +175,12 @@ export function TechTreePanel({ onClose }: TechTreePanelProps) {
                     >
                       <span className="tech-name">{tech.name}</span>
                       <span className="tech-cost">📚 {tech.cost}</span>
+                      {unlocks.length > 0 && (
+                        <span className="tech-unlocks">
+                          Unlocks: {unlocks.join(', ')}
+                        </span>
+                      )}
+                      <div className="tech-status-bar" style={{ background: statusColor(status) }} />
                       {status === 'active' && (
                         <div className="tech-progress-bar">
                           <div className="tech-progress-fill" style={{ width: `${pct}%` }} />
@@ -92,6 +189,7 @@ export function TechTreePanel({ onClose }: TechTreePanelProps) {
                       {status === 'done'      && <span className="tech-badge done">✓</span>}
                       {status === 'locked'    && <span className="tech-badge locked">🔒</span>}
                       {status === 'active'    && <span className="tech-badge active">⚗️ {pct}%</span>}
+                      {status === 'available' && <span className="tech-badge available">★</span>}
                     </button>
                   );
                 })}
@@ -156,7 +254,7 @@ export function TechTreePanel({ onClose }: TechTreePanelProps) {
         }
         .tech-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+          grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
           gap: 0.5rem;
         }
         .tech-card {
@@ -170,28 +268,37 @@ export function TechTreePanel({ onClose }: TechTreePanelProps) {
           color: #d0d8e8;
           transition: background 0.15s, border-color 0.15s;
           display: flex; flex-direction: column; gap: 0.2rem;
+          overflow: hidden;
         }
         .tech-card--available {
-          border-color: rgba(46,204,113,0.45);
+          border-color: rgba(241,196,15,0.5);
           cursor: pointer;
         }
         .tech-card--available:hover {
-          background: rgba(46,204,113,0.12);
-          border-color: #2ecc71;
+          background: rgba(241,196,15,0.1);
+          border-color: #f1c40f;
         }
         .tech-card--active {
           border-color: rgba(116,185,255,0.6);
           background: rgba(116,185,255,0.08);
         }
         .tech-card--done {
-          opacity: 0.45; cursor: default;
-          border-color: rgba(255,255,255,0.08);
+          border-color: rgba(46,204,113,0.25);
+          opacity: 0.6; cursor: default;
         }
         .tech-card--locked {
           opacity: 0.35; cursor: not-allowed;
         }
+        .tech-status-bar {
+          position: absolute; bottom: 0; left: 0; right: 0;
+          height: 3px; border-radius: 0 0 8px 8px;
+        }
         .tech-name { font-size: 0.87rem; font-weight: 600; }
         .tech-cost { font-size: 0.75rem; color: #888; }
+        .tech-unlocks {
+          font-size: 0.7rem; color: #999; font-style: italic;
+          line-height: 1.2;
+        }
         .tech-progress-bar {
           height: 4px; background: rgba(255,255,255,0.1);
           border-radius: 2px; margin-top: 2px; overflow: hidden;
@@ -204,9 +311,10 @@ export function TechTreePanel({ onClose }: TechTreePanelProps) {
           position: absolute; top: 4px; right: 6px;
           font-size: 0.72rem;
         }
-        .tech-badge.done   { color: #2ecc71; }
-        .tech-badge.locked { color: #666; }
-        .tech-badge.active { color: #74b9ff; }
+        .tech-badge.done      { color: #2ecc71; }
+        .tech-badge.locked    { color: #666; }
+        .tech-badge.active    { color: #74b9ff; }
+        .tech-badge.available { color: #f1c40f; }
       `}</style>
     </div>
   );

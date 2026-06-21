@@ -2,7 +2,9 @@ import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { saveGame, loadGame as loadFromDB, deleteSave, listSaves } from '@/utils/storage';
 import { canStackUnit } from '@/game/engine/UnitStacking';
+import { getMoveCost, isPassable } from '@/game/engine/TileManager';
 import { calculateCityYields, processCityGrowth } from '@/game/engine/CityGrowth';
+import { FogOfWarSystem } from '@/game/engine/FogOfWar';
 import { TECHNOLOGIES, TECH_COST_MULTIPLIERS } from '@/game/engine/TechSystem';
 import { RandomAI } from '@/game/engine/AIRandomStrategy';
 import type { AIAction } from '@/game/engine/AIRandomStrategy';
@@ -11,9 +13,19 @@ import { getOpenRouterKey } from '@/utils/apiKey';
 import { CITY_STATE_TYPES } from '@/game/engine/CityStateSystem';
 import type { CityStateType } from '@/game/engine/CityStateSystem';
 import { resolveCombat } from '@/game/engine/CombatResolver';
+import { ERA_SCORE_ACTIONS as EraSystem_ERA_SCORE_ACTIONS } from '@/game/engine/EraSystem';
+import { GovernmentSystem, GOVERNMENTS, GOVERNMENT_COST_MULTIPLIERS } from '@/game/engine/GovernmentSystem';
+import { VictorySystem } from '@/game/engine/VictorySystem';
+import type { VictoryType } from '@/game/engine/VictorySystem';
+import { BarbarianSystem } from '@/game/engine/BarbarianSystem';
+import type { BarbarianConfig } from '@/game/engine/BarbarianSystem';
+import { CrisisSystem, CRISIS_INTERVAL } from '@/game/engine/CrisisSystem';
+import type { CrisisConfig } from '@/game/engine/CrisisSystem';
+import { awardPromotion as applyPromotion } from '@/game/engine/PromotionSystem';
 import type { 
   GameState, GameSettings, Camera, Player, City, Unit, 
-  TileCoord, MapData, Tile, UnitId, TerrainType, CityStateData
+  TileCoord, MapData, Tile, UnitId, TerrainType, CityStateData,
+  CurrentProduction
 } from '@/game/entities/types';
 
 const MAP_SIZES: Record<string, { width: number; height: number }> = {
@@ -68,6 +80,7 @@ function createInitialState(): Omit<GameState, 'phase'> {
     showTileYields: false,
     nextId: 1,
     cityStates: [],
+    visibility: {},
   };
 }
 
@@ -81,6 +94,7 @@ interface GameStore extends GameState {
   updateCanvasSize: (w: number, h: number) => void;
   startGame: (settings: Partial<GameSettings>) => void;
   updateSettings: (settings: Partial<GameSettings>) => void;
+  calculateVisibility: () => void;
   endTurn: () => void;
   selectUnit: (unitId: UnitId | null) => void;
   selectTile: (coord: TileCoord | null) => void;
@@ -101,6 +115,8 @@ interface GameStore extends GameState {
   resetGame: () => void;
   // Research
   setResearch: (techId: string) => void;
+  // Era system
+  awardEraScore: (actionId: string, amount?: number) => void;
   // Cheat / QA actions
   toggleCheatMode: () => void;
   cheatAddResources: (gold?: number, science?: number, production?: number, culture?: number) => void;
@@ -112,6 +128,17 @@ interface GameStore extends GameState {
   nextTutorialStep: () => void;
   prevTutorialStep: () => void;
   endTutorial: () => void;
+  // Production
+  setProduction: (cityId: string, item: CurrentProduction) => void;
+  queueProduction: (cityId: string, item: CurrentProduction) => void;
+  // Promotions
+  awardPromotion: (unitId: string, promoId: string) => void;
+  // Government & Policy
+  setGovernment: (govId: string) => void;
+  equipPolicy: (cardId: string, slot: string) => void;
+  unequipPolicy: (cardId: string) => void;
+  // Religion
+  foundPantheon: (beliefId: string) => void;
 }
 
 export const useGameStore = create<GameStore>()(
@@ -131,6 +158,14 @@ export const useGameStore = create<GameStore>()(
         gameSpeed: settings.gameSpeed ?? 'standard',
         difficulty: settings.difficulty ?? 'standard',
         mapSeed: settings.mapSeed ?? Date.now(),
+        mapType: settings.mapType,
+        aiCount: settings.aiCount,
+        cityStateCount: settings.cityStateCount,
+        victoriesEnabled: settings.victoriesEnabled,
+        barbarians: settings.barbarians,
+        resources: settings.resources,
+        fogOfWar: settings.fogOfWar,
+        quickCombat: settings.quickCombat,
       };
 
       const humanPlayer: Player = {
@@ -145,11 +180,19 @@ export const useGameStore = create<GameStore>()(
         currentResearch: null,
         score: 0,
         eraScore: 0,
+        eraScoreActions: {},
+        legacyObjectives: {},
+        government: 'oligarchy',
+        activePolicies: [],
+        faith: 0,
+        tradeRoutes: [],
+        greatWorks: [],
       };
 
-      const aiPlayers: Player[] = [1, 2].map((id) => ({
-        id,
-        name: `AI Player ${id}`,
+      const aiCount = settings.aiCount ?? 2;
+      const aiPlayers: Player[] = Array.from({ length: aiCount }, (_, i) => ({
+        id: i + 1,
+        name: `AI Player ${i + 1}`,
         isAI: true,
         isHuman: false,
         gold: 100,
@@ -159,6 +202,13 @@ export const useGameStore = create<GameStore>()(
         currentResearch: null,
         score: 0,
         eraScore: 0,
+        eraScoreActions: {},
+        legacyObjectives: {},
+        government: 'oligarchy',
+        activePolicies: [],
+        faith: 0,
+        tradeRoutes: [],
+        greatWorks: [],
       }));
 
       const barbarianPlayer: Player = {
@@ -173,6 +223,13 @@ export const useGameStore = create<GameStore>()(
         currentResearch: null,
         score: 0,
         eraScore: 0,
+        eraScoreActions: {},
+        legacyObjectives: {},
+        government: null,
+        activePolicies: [],
+        faith: 0,
+        tradeRoutes: [],
+        greatWorks: [],
       };
 
       set((state) => {
@@ -187,6 +244,7 @@ export const useGameStore = create<GameStore>()(
       });
 
       get().generateMap();
+      get().calculateVisibility();
     },
 
     generateMap: () => {
@@ -219,6 +277,43 @@ export const useGameStore = create<GameStore>()(
       // Post-process: features and resources
       placeFeatures(tiles, seed);
       placeResources(tiles, seed);
+
+      // Map type post-processing
+      if (settings.mapType === 'islands') {
+        tiles.forEach(tile => {
+          if (tile.terrain === 'grassland' || tile.terrain === 'plains') {
+            if (pseudoRandom(tile.x * 1000 + tile.y + seed) < 0.3) {
+              tile.terrain = 'coast';
+              tile.feature = null;
+            }
+          }
+        });
+      } else if (settings.mapType === 'pangaea') {
+        const cx = size.width / 2;
+        const cy = size.height / 2;
+        const maxDist = Math.sqrt(cx * cx + cy * cy);
+        tiles.forEach(tile => {
+          const dist = Math.sqrt((tile.x - cx) ** 2 + (tile.y - cy) ** 2);
+          if (dist / maxDist > 0.5 && tile.terrain !== 'mountain') {
+            tile.terrain = 'ocean';
+            tile.feature = null;
+            tile.resource = null;
+          }
+        });
+      } else if (settings.mapType === 'shuffle') {
+        tiles.forEach(tile => {
+          const r = pseudoRandom(tile.x * 2000 + tile.y * 3 + seed);
+          if (r < 0.33) {
+            tile.terrain = 'ocean';
+            tile.feature = null;
+            tile.resource = null;
+          } else if (r < 0.66) {
+            tile.terrain = 'grassland';
+          } else {
+            tile.terrain = 'desert';
+          }
+        });
+      }
 
       const mapData: MapData = {
         width: size.width,
@@ -339,7 +434,8 @@ export const useGameStore = create<GameStore>()(
           for (const u of p.units) usedCsPos.add(`${u.x},${u.y}`);
         }
         const newCityStates: CityStateData[] = [];
-        for (let i = 0; i < 6; i++) {
+        const csCount = state.settings.cityStateCount ?? 6;
+        for (let i = 0; i < csCount; i++) {
           const csType = csTypes[i % csTypes.length];
           for (let attempt = 0; attempt < 300; attempt++) {
             const cx = Math.floor(Math.random() * size.width);
@@ -368,6 +464,36 @@ export const useGameStore = create<GameStore>()(
       });
     },
 
+    calculateVisibility: () => {
+      const { map, players, settings } = get();
+      if (!map || settings.fogOfWar === false) {
+        // Fog disabled — mark everything visible
+        set((state) => {
+          state.visibility = {};
+          for (const p of state.players) {
+            if (p.id === -1) continue;
+            const vis: Record<string, 'visible'> = {};
+            for (const key of state.map?.tiles.keys() ?? []) vis[key] = 'visible';
+            state.visibility[p.id] = vis;
+          }
+        });
+        return;
+      }
+      const fog = new FogOfWarSystem(map, {
+        enabled: true,
+        difficulty: settings.difficulty,
+      });
+      const newVisibility: Record<number, Record<string, 'hidden' | 'seen' | 'visible'>> = {};
+      for (const p of players) {
+        if (p.id === -1) continue;
+        const visMap = fog.calculateVisibility(players, p.id);
+        const vis: Record<string, 'hidden' | 'seen' | 'visible'> = {};
+        visMap.forEach((state, tileId) => { vis[tileId] = state; });
+        newVisibility[p.id] = vis;
+      }
+      set((state) => { state.visibility = newVisibility; });
+    },
+
     endTurn: () => {
       // Guard: ignore if AI is still thinking or not in game
       if (get().aiThinking || get().phase !== 'playing') return;
@@ -377,11 +503,13 @@ export const useGameStore = create<GameStore>()(
       // ── Synchronous path (no OpenRouter key) ─────────────────────────────
       // Keeps original behavior: single Immer draft, no async overhead.
       if (!apiKey) {
+        let humanTechResearched = false;
         set((state) => {
           if (!state.map) return;
           const humanPlayer = state.players.find(p => !p.isAI && p.id === state.currentPlayer);
           if (humanPlayer) {
-            processTurnForPlayer(humanPlayer as Player, state.map as MapData, state.settings);
+            const result = processTurnForPlayer(humanPlayer as Player, state.map as MapData, state.settings);
+            if (result.techResearched) humanTechResearched = true;
           }
           for (const aiPlayer of state.players) {
             if (!aiPlayer.isAI || aiPlayer.id === -1) continue;
@@ -407,16 +535,26 @@ export const useGameStore = create<GameStore>()(
           }
           state.turn += 1;
         });
+        if (humanTechResearched) {
+          get().awardEraScore('discover_tech');
+        }
+        // Process barbarians and crisis every turn
+        processBarbariansAndCrises(get);
+        // Check victory conditions
+        checkVictoryConditions(get);
+        get().calculateVisibility();
         return;
       }
 
       // ── Async path (OpenRouter key present) ──────────────────────────────
       // Process human player synchronously, then AI turns with OpenRouter.
+      let humanTechResearched = false;
       set((state) => {
         if (!state.map) return;
         const humanPlayer = state.players.find(p => !p.isAI && p.id === state.currentPlayer);
         if (humanPlayer) {
-          processTurnForPlayer(humanPlayer as Player, state.map as MapData, state.settings);
+          const result = processTurnForPlayer(humanPlayer as Player, state.map as MapData, state.settings);
+          if (result.techResearched) humanTechResearched = true;
         }
         state.aiThinking = true;
       });
@@ -475,6 +613,12 @@ export const useGameStore = create<GameStore>()(
           state.turn      += 1;
           state.aiThinking = false;
         });
+        if (humanTechResearched) {
+          get().awardEraScore('discover_tech');
+        }
+        processBarbariansAndCrises(get);
+        checkVictoryConditions(get);
+        get().calculateVisibility();
       })().catch(err => {
         console.error('[endTurn] async AI processing failed:', err);
         set((state) => { state.aiThinking = false; });
@@ -505,6 +649,7 @@ export const useGameStore = create<GameStore>()(
     },
 
     moveUnit: (unitId, to) => {
+      let killOccurred = false;
       set((state) => {
         const unit = state.players
           .flatMap((p) => p.units)
@@ -520,6 +665,14 @@ export const useGameStore = create<GameStore>()(
 
         if (!fromTile || !toTile) return;
 
+        const cost = getMoveCost(fromTile, toTile);
+        if (!isPassable(toTile, unit.type)) {
+          return;
+        }
+        if (unit.movement < cost) {
+          return;
+        }
+
         const stackingCheck = canStackUnit(unit, toTile, state.players);
         if (!stackingCheck.allowed) {
           console.warn(`Cannot move unit: ${stackingCheck.reason}`);
@@ -531,7 +684,7 @@ export const useGameStore = create<GameStore>()(
 
         unit.x = to.x;
         unit.y = to.y;
-        unit.movement -= 1;
+        unit.movement -= cost;
         if (unit.movement <= 0) {
           unit.hasActed = true;
         }
@@ -560,6 +713,7 @@ export const useGameStore = create<GameStore>()(
             if (result.defenderKilled || enemy.health <= 0) {
               destTileForCombat.units = destTileForCombat.units.filter(uid => uid !== enemy.id);
               enemyPlayer.units.splice(enemyIdx, 1);
+              killOccurred = true;
             }
             const unitOwner = state.players.find(p => p.id === unit.owner);
             if (unitOwner && (result.attackerKilled || unit.health <= 0)) {
@@ -573,6 +727,10 @@ export const useGameStore = create<GameStore>()(
           }
         }
       });
+      if (killOccurred) {
+        get().awardEraScore('kill_unit');
+      }
+      get().calculateVisibility();
     },
 
     updateCanvasSize: (w, h) => {
@@ -686,6 +844,23 @@ export const useGameStore = create<GameStore>()(
         if (tile) {
           tile.cityId = city.id;
           tile.owner = state.currentPlayer;
+
+          // Claim surrounding hex tiles
+          const dirs = (y % 2 === 0)
+            ? [[1, 0], [0, -1], [-1, -1], [-1, 0], [-1, +1], [0, +1]]
+            : [[1, 0], [+1, -1], [0, -1], [-1, 0], [0, +1], [+1, +1]];
+          for (const [dx, dy] of dirs) {
+            const nx = x + dx;
+            const ny = y + dy;
+            if (nx >= 0 && nx < (state.map?.width ?? 0) && ny >= 0 && ny < (state.map?.height ?? 0)) {
+              const nTile = state.map?.tiles.get(`${nx},${ny}`);
+              if (nTile && nTile.terrain !== 'ocean' && nTile.terrain !== 'mountain') {
+                nTile.owner = state.currentPlayer;
+                nTile.cityId = city.id;
+                city.tiles.push({ x: nx, y: ny });
+              }
+            }
+          }
           // Find the settler specifically at the city location (x, y)
           const settler = player.units.find((u) => u.type === 'settler' && u.x === x && u.y === y);
           if (settler) {
@@ -700,6 +875,7 @@ export const useGameStore = create<GameStore>()(
           state.selectedTile = null;
         }
       });
+      get().awardEraScore('found_city');
     },
 
     buildImprovement: (x, y, improvement) => {
@@ -759,9 +935,10 @@ export const useGameStore = create<GameStore>()(
       }));
     },
 
-    loadGameState: (state) => {
+    loadGameState: (incoming) => {
+      const restored = deserializeGameState(incoming as Record<string, unknown>);
       set(() => ({
-        ...(state as GameState),
+        ...restored,
         phase: 'playing' as const,
       }));
     },
@@ -777,7 +954,7 @@ export const useGameStore = create<GameStore>()(
       set((state) => { state.cheatMode = !state.cheatMode; });
     },
 
-    cheatAddResources: (gold = 500, science = 200, production = 200, culture = 200) => {
+    cheatAddResources: (gold = 500, science = 200, production = 200, _culture = 200) => {
       set((state) => {
         const human = state.players.find(p => !p.isAI);
         if (!human) return;
@@ -789,7 +966,7 @@ export const useGameStore = create<GameStore>()(
           if (production > 0 && city.currentProduction) {
             city.currentProduction.progress += production;
           }
-          city.foodStockpile += culture; // culture used as general boost
+          city.foodStockpile += Math.floor(production * 0.5);
         }
       });
     },
@@ -856,8 +1033,99 @@ export const useGameStore = create<GameStore>()(
       });
     },
 
+    awardEraScore: (actionId: string, amount?: number) => {
+      set((state) => {
+        const human = state.players.find(p => p.id === 0);
+        if (!human) return;
+        const eraAction = EraSystem_ERA_SCORE_ACTIONS[actionId];
+        if (!eraAction) return;
+        const score = (amount ?? eraAction.eraScore);
+        human.eraScore += score;
+        human.eraScoreActions[actionId] = (human.eraScoreActions[actionId] ?? 0) + 1;
+      });
+    },
+
     endTutorial: () => {
       set((state) => { state.tutorialActive = false; state.tutorialStep = 0; });
+    },
+
+    setProduction: (cityId, item) => {
+      set((state) => {
+        const city = state.players
+          .flatMap(p => p.cities)
+          .find(c => c.id === cityId);
+        if (city) {
+          city.currentProduction = { ...item, progress: 0 };
+        }
+      });
+    },
+
+    queueProduction: (cityId, item) => {
+      set((state) => {
+        const city = state.players
+          .flatMap(p => p.cities)
+          .find(c => c.id === cityId);
+        if (city) {
+          city.buildQueue.push({ ...item, progress: 0 });
+        }
+      });
+    },
+
+    awardPromotion: (unitId, promoId) => {
+      set((state) => {
+        const unit = state.players
+          .flatMap(p => p.units)
+          .find(u => u.id === unitId);
+        if (unit && unit.pendingPromotion) {
+          const success = applyPromotion(unit as Unit, promoId as any);
+          if (success) {
+            unit.pendingPromotion = false;
+          }
+        }
+      });
+    },
+
+    setGovernment: (govId: string) => {
+      set((state) => {
+        const player = state.players.find(p => p.id === 0);
+        if (!player) return;
+        const gov = GOVERNMENTS[govId as keyof typeof GOVERNMENTS];
+        if (!gov) return;
+        const multiplier = GOVERNMENT_COST_MULTIPLIERS[state.settings.gameSpeed];
+        const cost = Math.floor(gov.cost * multiplier);
+        if (player.gold < cost) return;
+        player.gold -= cost;
+        player.government = govId;
+        player.activePolicies = [];
+      });
+    },
+
+    equipPolicy: (cardId: string, slot: string) => {
+      set((state) => {
+        const player = state.players.find(p => p.id === 0);
+        if (!player) return;
+        if (player.activePolicies.includes(cardId)) return;
+        player.activePolicies.push(cardId);
+        void slot;
+      });
+    },
+
+    unequipPolicy: (cardId: string) => {
+      set((state) => {
+        const player = state.players.find(p => p.id === 0);
+        if (!player) return;
+        player.activePolicies = player.activePolicies.filter(id => id !== cardId);
+      });
+    },
+
+    foundPantheon: (beliefId: string) => {
+      set((state) => {
+        const player = state.players.find(p => p.id === 0);
+        if (!player) return;
+        if ((player.faith ?? 0) < 20) return;
+        player.faith -= 20;
+        (player as any).pantheon = beliefId;
+      });
     },
 
     updateSettings: (partial) => {
@@ -871,6 +1139,73 @@ export const useGameStore = create<GameStore>()(
 // Expose store on window in development for debugging / e2e tests
 if (typeof window !== 'undefined' && import.meta.env.DEV) {
   (window as any).__civlite_store__ = useGameStore;
+}
+
+// ─── Barbarian / Crisis / Victory helpers ─────────────────────────────────────
+
+function processBarbariansAndCrises(
+  get: () => GameStore,
+): void {
+  const state = get();
+  if (!state.map || state.phase !== 'playing') return;
+
+  // Process barbarian spawns every 30 turns
+  if (state.settings.barbarians !== false && state.turn % 30 === 0) {
+    const config: BarbarianConfig = {
+      map: state.map,
+      players: state.players as Player[],
+      difficulty: state.settings.difficulty,
+      age: state.age,
+      turn: state.turn,
+    };
+    const barbarianSystem = new BarbarianSystem(config);
+    barbarianSystem.processTurn();
+  }
+
+  // Process crises every 30 turns (only after antiquity)
+  if (state.age !== 'antiquity' && state.turn % CRISIS_INTERVAL === 0) {
+    const crisisConfig: CrisisConfig = {
+      age: state.age,
+      turn: state.turn,
+      playerCount: state.players.filter(p => p.id !== -1).length,
+    };
+    const crisisSystem = new CrisisSystem(crisisConfig);
+    const nonBarbarianPlayers = state.players
+      .filter(p => p.id !== -1)
+      .map(p => p.id);
+    crisisSystem.triggerRandomCrisis(nonBarbarianPlayers);
+  }
+}
+
+function checkVictoryConditions(get: () => GameStore): void {
+  const state = get();
+  if (!state.map || state.phase !== 'playing') return;
+
+  const enabledVictories: VictoryType[] = [];
+  const vSettings = state.settings.victoriesEnabled;
+  if (!vSettings || vSettings.domination) enabledVictories.push('domination');
+  if (!vSettings || vSettings.science) enabledVictories.push('science');
+  if (!vSettings || vSettings.culture) enabledVictories.push('cultural');
+  if (!vSettings || vSettings.religious) enabledVictories.push('religious');
+  if (!vSettings || vSettings.diplomatic) enabledVictories.push('diplomatic');
+  if (!vSettings || vSettings.age) enabledVictories.push('age');
+
+  if (enabledVictories.length === 0) return;
+
+  const victorySystem = new VictorySystem(enabledVictories);
+
+  for (const player of state.players) {
+    if (player.id === -1) continue;
+    const victory = victorySystem.checkAllVictories(player, {
+      players: state.players as Player[],
+      age: state.age,
+      turn: state.turn,
+    });
+    if (victory) {
+      useGameStore.setState({ phase: 'ended' });
+      return;
+    }
+  }
 }
 
 // ─── Serialization helpers ───────────────────────────────────────────────────
@@ -906,13 +1241,48 @@ function deserializeGameState(data: Record<string, unknown>): Partial<GameState>
 
 // ─── Turn-processing helpers ─────────────────────────────────────────────────
 
-function processTurnForPlayer(player: Player, map: MapData, settings: GameSettings): void {
+function processTurnForPlayer(player: Player, map: MapData, settings: GameSettings): { techResearched: boolean } {
+  const result = { techResearched: false };
+
+  // Government bonus multipliers
+  const govConfig = { gameSpeed: settings.gameSpeed };
+  const gov = new GovernmentSystem(player, govConfig);
+
   // City production
   for (const city of player.cities) {
     if (!city.currentProduction) continue;
     const yields = calculateCityYields(city, map);
-    city.currentProduction.progress += Math.max(1, yields.totalYields.production);
+    let production = Math.max(1, yields.totalYields.production);
+    production = Math.floor(production * gov.getBonusMultiplier('production'));
+    city.currentProduction.progress += production;
     if (city.currentProduction.progress >= city.currentProduction.cost) {
+      const completed = city.currentProduction;
+      if (completed.type === 'unit') {
+        const unitId = `unit-${player.id}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+        const newUnit: Unit = {
+          id: unitId,
+          type: completed.name as Unit['type'],
+          owner: player.id,
+          x: city.x,
+          y: city.y,
+          health: 100,
+          maxHealth: 100,
+          movement: 2,
+          maxMovement: 2,
+          strength: 10,
+          strengthBase: 10,
+          hasActed: false,
+        };
+        player.units.push(newUnit);
+        const tile = map.tiles.get(`${city.x},${city.y}`);
+        if (tile) {
+          tile.units.push(unitId);
+        }
+      } else if (completed.type === 'building') {
+        if (!city.buildings.includes(completed.name)) {
+          city.buildings.push(completed.name);
+        }
+      }
       city.currentProduction = city.buildQueue.length > 0
         ? city.buildQueue.shift()!
         : null;
@@ -924,7 +1294,7 @@ function processTurnForPlayer(player: Player, map: MapData, settings: GameSettin
     processCityGrowth(city, map, settings.gameSpeed);
   }
 
-  // Research
+  // Research with government bonus
   if (player.currentResearch) {
     let sciencePerTurn = 0;
     for (const city of player.cities) {
@@ -934,6 +1304,7 @@ function processTurnForPlayer(player: Player, map: MapData, settings: GameSettin
       if (city.buildings.includes('research_lab')) sciencePerTurn += 6;
     }
     sciencePerTurn = Math.max(1, sciencePerTurn);
+    sciencePerTurn = Math.floor(sciencePerTurn * gov.getBonusMultiplier('science'));
     player.currentResearch.progress += sciencePerTurn;
 
     const tech = TECHNOLOGIES[player.currentResearch.techId];
@@ -942,15 +1313,38 @@ function processTurnForPlayer(player: Player, map: MapData, settings: GameSettin
       if (player.currentResearch.progress >= cost) {
         player.technologies.add(player.currentResearch.techId);
         player.currentResearch = null;
+        result.techResearched = true;
       }
     }
   }
 
-  // Gold income
+  // Gold income with government bonus
   for (const city of player.cities) {
     const yields = calculateCityYields(city, map);
-    player.gold += yields.totalYields.gold;
+    let gold = yields.totalYields.gold;
+    gold = Math.floor(gold * gov.getBonusMultiplier('gold'));
+    player.gold += gold;
   }
+
+  // Faith accumulation from buildings
+  let faithPerTurn = 0;
+  for (const city of player.cities) {
+    if (city.buildings.includes('temple')) faithPerTurn += 2;
+    if (city.buildings.includes('shrine')) faithPerTurn += 1;
+  }
+  if (faithPerTurn > 0) {
+    faithPerTurn = Math.floor(faithPerTurn * gov.getBonusMultiplier('faith'));
+    player.faith = (player.faith ?? 0) + faithPerTurn;
+  }
+
+  // Process trade route yields
+  for (const route of (player.tradeRoutes ?? []) as Array<{ active: boolean; yields?: { gold?: number } }>) {
+    if (route.active && route.yields?.gold) {
+      player.gold += route.yields.gold;
+    }
+  }
+
+  return result;
 }
 
 function applyAIActionsToState(
@@ -1165,6 +1559,11 @@ function findNearestLand(
     }
   }
   return { x: cx, y: cy };
+}
+
+function pseudoRandom(seed: number): number {
+  let x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
 }
 
 /** Place terrain features (oasis, floodplains, forest, reefs) and bonus resources. */

@@ -1,4 +1,24 @@
-import type { Player, GameAge } from '@/game/entities/types';
+import type { Player, GameAge, MapData } from '@/game/entities/types';
+
+const HEX_DIRS_EVEN_R: ReadonlyArray<readonly [number, number]> = [
+  [+1, 0], [0, -1], [-1, -1], [-1, 0], [-1, +1], [0, +1],
+];
+const HEX_DIRS_ODD_R: ReadonlyArray<readonly [number, number]> = [
+  [+1, 0], [+1, -1], [0, -1], [-1, 0], [0, +1], [+1, +1],
+];
+
+function hexNeighbors(x: number, y: number): Array<{ x: number; y: number }> {
+  const dirs = (y % 2 === 0) ? HEX_DIRS_EVEN_R : HEX_DIRS_ODD_R;
+  return dirs.map(([dx, dy]) => ({ x: x + dx, y: y + dy }));
+}
+
+function isCoastalCity(city: { x: number; y: number }, map: MapData): boolean {
+  for (const n of hexNeighbors(city.x, city.y)) {
+    const tile = map.tiles.get(`${n.x},${n.y}`);
+    if (tile && (tile.terrain === 'ocean' || tile.terrain === 'coast')) return true;
+  }
+  return false;
+}
 
 export type CrisisType = 'zombie_outbreak' | 'volcanic_winter' | 'pirate_raid' | 'plague';
 
@@ -82,7 +102,7 @@ export class CrisisSystem {
     return crisis;
   }
 
-  applyCrisisEffect(crisis: Crisis, players: Player[]): void {
+  applyCrisisEffect(crisis: Crisis, players: Player[], map: MapData): void {
     switch (crisis.type) {
       case 'zombie_outbreak':
         this.applyZombieEffect(players);
@@ -91,7 +111,7 @@ export class CrisisSystem {
         this.applyVolcanicEffect(players);
         break;
       case 'pirate_raid':
-        this.applyPirateEffect(players);
+        this.applyPirateEffect(players, map);
         break;
       case 'plague':
         this.applyPlagueEffect(players);
@@ -115,9 +135,9 @@ export class CrisisSystem {
     }
   }
 
-  private applyPirateEffect(players: Player[]): void {
+  private applyPirateEffect(players: Player[], map: MapData): void {
     for (const player of players) {
-      const coastalCities = player.cities.filter(c => c.y % 5 === 0);
+      const coastalCities = player.cities.filter(c => isCoastalCity(c, map));
       for (const city of coastalCities) {
         city.population = Math.max(1, city.population - 1);
       }

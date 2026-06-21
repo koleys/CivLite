@@ -5,3 +5,5 @@ export { VictoryProgress } from './VictoryProgress';
 export type { VictoryProgressData } from './VictoryProgress';
 export { TopBar } from './TopBar';
 export { Minimap } from './Minimap';
+export { UnitPanel } from './UnitPanel';
+export { PromotionDialog } from './PromotionDialog';
