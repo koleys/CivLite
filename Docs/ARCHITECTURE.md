@@ -1,6 +1,6 @@
 # CivLite Architecture
 
-**Last Updated**: Post-Phase-1 audit  
+**Last Updated**: Post-blueprint implementation  
 **Status**: Reflects current implementation in `src/`
 
 ---
@@ -28,40 +28,88 @@ CivLite is a browser-based 4X strategy game inspired by Civilization VII. It run
 src/
 ├── components/
 │   ├── game/
-│   │   └── GameCanvas.tsx       # Main canvas renderer + all in-game UI overlays
+│   │   ├── GameCanvas.tsx        # Main canvas renderer + all in-game UI overlays
+│   │   ├── CityPanel.tsx         # City management: yields, production queue, buildings
+│   │   ├── UnitPanel.tsx         # Unit actions: fortify, skip, promotion info
+│   │   ├── PromotionDialog.tsx   # Level-up promotion selection
+│   │   ├── TechTreePanel.tsx     # Tech tree with prerequisite lines
+│   │   ├── GovernmentPanel.tsx   # Government switching, policy cards
+│   │   ├── ReligionPanel.tsx     # Faith, pantheon founding
+│   │   ├── TopBar.tsx            # Turn, gold, science, age display
+│   │   ├── Minimap.tsx           # Minimap overlay
+│   │   ├── CheatPanel.tsx        # Cheat mode sliders
+│   │   ├── NotificationPanel.tsx # In-game notifications
+│   │   ├── TutorialOverlay.tsx   # Step-by-step tutorial
+│   │   └── VictoryProgress.tsx   # Victory condition progress
 │   ├── menus/
-│   │   └── MainMenu.tsx         # Main menu: 3-panel system (main/newgame/settings)
+│   │   ├── MainMenu.tsx          # Main menu
+│   │   ├── GameSetup.tsx         # Game configuration
+│   │   ├── Settings.tsx          # Settings panel
+│   │   └── LoadingScreen.tsx     # Loading screen
 │   └── ui/
-│       ├── Button.tsx           # Reusable button component
-│       └── Modal.tsx            # Reusable modal component
+│       ├── Button.tsx, Modal.tsx, Tooltip.tsx, Dropdown.tsx
+│       ├── Badge.tsx, ProgressBar.tsx, Slider.tsx, Tabs.tsx
+│       └── index.ts              # Barrel exports
 ├── game/
+│   ├── ai/
+│   │   └── OpenRouterAI.ts       # LLM-powered AI (OpenRouter API)
+│   ├── data/
+│   │   ├── units.json            # Unit stats (cost, strength, movement, era)
+│   │   ├── buildings.json        # Building stats (cost, yields, era)
+│   │   └── index.ts              # Typed exports
 │   ├── entities/
-│   │   └── types.ts             # ALL TypeScript type definitions (single source of truth)
+│   │   └── types.ts              # ALL TypeScript type definitions (single source of truth)
 │   └── engine/
-│       ├── TileManager.ts       # Tile yield calculation + improvement rules
-│       ├── GameEngine.ts        # Turn logic, combat, movement validation (used primarily in unit tests)
-│       ├── CityGrowth.ts        # Food accumulation & population growth
-│       ├── TechSystem.ts        # Technology tree, Eureka moments, research progress
-│       ├── EraSystem.ts         # Three-age progression, legacy objectives, era score
-│       ├── VictorySystem.ts     # Six victory condition checks
-│       ├── AIRandomStrategy.ts  # AI player turn processing
-│       ├── CombatResolver.ts    # Melee/ranged/siege combat resolution
-│       ├── FogOfWar.ts          # Per-player visibility tracking
-│       ├── BarbarianSystem.ts   # Barbarian camp spawning & scout patrol
-│       ├── ReligionSystem.ts    # Faith generation, religion founding & spreading
-│       ├── TradeSystem.ts       # Trade routes and route income
-│       └── UnitStacking.ts      # Unit stacking rules enforcement
+│       ├── GameEngine.ts         # Turn logic (used primarily in unit tests)
+│       ├── CombatResolver.ts     # Melee/ranged/siege/nuclear combat
+│       ├── TechSystem.ts         # 40+ techs, Eureka triggers, research
+│       ├── CivicSystem.ts        # 20+ civics, inspiration triggers
+│       ├── EraSystem.ts          # Three-age progression, era score, legacy objectives
+│       ├── VictorySystem.ts      # Six victory condition checks
+│       ├── GovernmentSystem.ts   # 10 governments, 20+ policy cards, bonuses
+│       ├── ReligionSystem.ts     # Faith, pantheon, religion, missionaries
+│       ├── TradeSystem.ts        # Trade routes, yields, colonial bonuses
+│       ├── GreatWorksSystem.ts   # Great persons, tourism, national parks
+│       ├── PromotionSystem.ts    # 18 promotions, XP thresholds, trees
+│       ├── BarbarianSystem.ts    # Camp spawning, scouts, raiders, leaders
+│       ├── CityStateSystem.ts    # 8 city-state types, envoy bonuses, suzerain
+│       ├── CityGrowth.ts         # Food accumulation, housing, amenities
+│       ├── TileManager.ts        # Tile yields, improvements, movement costs
+│       ├── UnitStacking.ts       # 3 military / 1 civilian per tile
+│       ├── FogOfWar.ts           # Per-player visibility, sight radii
+│       ├── CrisisSystem.ts       # Zombie, volcanic, pirate, plague crises
+│       ├── CivTransitionSystem.ts # 30 civilizations, cross-era transitions
+│       ├── CheatSystem.ts        # 9 multiplier sliders, persistence
+│       ├── UnlockManager.ts      # Tech→unlock mappings, production items
+│       └── AIRandomStrategy.ts   # Random AI with weighted strategies
 ├── store/
-│   └── gameStore.ts             # Zustand store: all game state, the live game loop, map generation
+│   └── gameStore.ts              # Zustand store: all game state, game loop, map generation
+├── renderer/
+│   ├── HardwareDetector.ts       # GPU/CPU/RAM detection, quality preset
+│   └── WebGLRenderer.ts          # WebGL renderer (stub, not integrated)
+├── network/
+│   └── SocketManager.ts          # WebSocket multiplayer (stub, no server)
+├── system/
+│   ├── AudioSystem.ts            # Audio (stub)
+│   └── PerformanceOptimizer.ts   # Performance monitoring (stub)
 ├── utils/
-│   ├── pathfinding.ts           # A* pathfinding + BFS reachable-tile calculation
-│   └── storage.ts               # IndexedDB save/load via idb
-├── App.tsx                      # Root component: renders MainMenu or GameCanvas by phase
-├── main.tsx                     # Entry point: calls enableMapSet(), mounts React
-└── index.css                    # Global CSS custom properties and resets
+│   ├── pathfinding.ts            # A* pathfinding + BFS reachable tiles
+│   ├── storage.ts                # IndexedDB save/load via idb
+│   ├── aiModels.ts               # OpenRouter model priority list
+│   ├── apiKey.ts                 # OpenRouter API key management
+│   └── imageCache.ts             # Image caching
+├── shaders/                      # Empty (reserved for WebGL)
+├── App.tsx                       # Root component: phase-based routing
+├── main.tsx                      # Entry point: enableMapSet(), mounts React
+└── index.css                     # Global CSS custom properties and resets
 
-tests/                           # Vitest unit tests (mirror of src/ structure)
-e2e/                             # Playwright end-to-end tests
+tests/
+├── setup.ts                      # Test setup: enableMapSet(), mocks
+├── game/                         # Unit tests for game engine
+├── components/                   # Component tests
+└── integration/
+    └── fullTurn.test.ts          # Integration: multi-turn game loop
+e2e/                              # Playwright end-to-end tests
 ```
 
 ---
@@ -602,17 +650,15 @@ await page.evaluate(({ type, cx, cy }) => {
 
 | Issue | Severity | Notes |
 |---|---|---|
-| Production completion doesn't spawn units/buildings | Medium | `processTurnForPlayer` clears the queue when `progress >= cost` but never instantiates the produced item |
 | `GameEngine` class is disconnected from live game loop | Low | The Zustand `endTurn()` uses `processTurnForPlayer()` directly; `GameEngine` is only used in unit tests |
-| Research in `processTurnForPlayer` is inlined (not via `TechSystem`) | Low | Duplicates science-per-turn logic; `GameEngine.processResearch()` does use `TechSystem` but isn't called in production |
 | `VictorySystem.checkAgeVictory()` always returns `false` | Medium | Stub — age victory not implemented |
-| `VictorySystem.checkDominationVictory()` skips players with no original capital | Low | Enemy players who haven't yet founded a city are silently excluded from the domination check |
-| Map tiles not serializable via `JSON.stringify` | Medium | `Map<string, Tile>` requires custom `serializeGameState` / `deserializeGameState` helpers in the store; save/load works but is fragile if the format changes |
-| No fog of war in UI | Low | `FogOfWar.ts` exists and is tested, but is not wired into `GameCanvas.tsx` rendering |
-| No sound | Low | Audio not implemented |
-| No multiplayer | Low | Hot-seat planned; online multiplayer far future |
-| No tech/civic/religion/trade UI panels | Medium | Planned for Phase 2 |
-| `EraSystem.hasAgeVictory` checks all 5 objectives | Low | Should check only the 3 selected; design decision pending |
+| Duplicate yield tables in `CityGrowth.ts` and `TileManager.ts` | Low | Should consolidate into single source |
+| `WebGLRenderer` exists but is never integrated | Low | Colored quads only; Canvas2D is the active renderer |
+| `SocketManager` multiplayer has no server backend | Low | Client-side structure only |
+| `CrisisSystem.volcanicEffect` is a stub (no food reduction) | Medium | Food halving not implemented for volcanic winter |
+| `ReligionSystem` religious units don't exist on map | Medium | `trainMissionary/Apostle` deduct faith but create no Unit |
+| No sound | Low | Audio system stub exists |
+| No specialist yield calculation | Low | `specialistSlots` exist but yields not computed from them |
 
 ---
 
