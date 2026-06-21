@@ -193,9 +193,9 @@ export function resolveCombat(
 
   const defenderDamaged = defender.health < defender.maxHealth * 0.5;
   if (defenderDamaged) {
-    const hasChargePromo = defenderPromotions.promotions.includes('charge');
-    if (hasChargePromo) {
-      effectiveDefenderStrength = Math.floor(effectiveDefenderStrength * 1.15);
+    const attackerHasCharge = attackerPromotions.promotions.includes('charge');
+    if (attackerHasCharge) {
+      effectiveAttackerStrength = Math.floor(effectiveAttackerStrength * 1.15);
     }
   }
 
@@ -269,12 +269,17 @@ export function applyCombatDamage(
 function updateUnitLevel(unit: Unit): void {
   const promotions = getUnitPromotions(unit); // initializes unit.promotions if missing
   const xpThresholds = [10, 30, 60, 100, 150];
+  const prevLevel = promotions.level;
 
   for (let i = xpThresholds.length - 1; i >= 0; i--) {
     if (promotions.xp >= xpThresholds[i]) {
       promotions.level = i + 1;
-      return;
+      break;
     }
+  }
+
+  if (promotions.level > prevLevel) {
+    unit.pendingPromotion = true;
   }
 }
 
@@ -324,9 +329,9 @@ export function resolveNuke(
       if (dx === 0 && dy === 0) {
         const city = players.flatMap((p) => p.cities).find((c) => c.x === x && c.y === y);
         if (city) {
+          destroyedBuildings.push(...city.buildings);
           city.population = 1;
           city.buildings = [];
-          destroyedBuildings.push(...city.buildings);
           city.garrison = null;
         }
       }

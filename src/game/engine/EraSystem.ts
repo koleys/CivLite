@@ -20,6 +20,7 @@ export const ERA_SCORE_ACTIONS: Record<string, EraScoreAction> = {
   build_unique: { action: 'Build a unique unit/building', eraScore: 3, repeatable: true },
   gain_city_diplomatic: { action: 'Gain a city via diplomatic means', eraScore: 5, repeatable: true },
   kill_advanced_unit: { action: 'Kill a unit from a more advanced era', eraScore: 3, repeatable: true },
+  discover_tech: { action: 'Discover a Technology', eraScore: 3, repeatable: true },
 };
 
 export interface LegacyObjective {

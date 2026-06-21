@@ -1,13 +1,18 @@
+import { useGameStore } from '@/store/gameStore';
 import { Button } from '@/components/ui';
-import type { Unit } from '@/game/entities/types';
 
 interface UnitPanelProps {
-  unit: Unit;
+  unitId: string;
   onClose: () => void;
 }
 
-export function UnitPanel({ unit, onClose }: UnitPanelProps) {
-  // TODO: Wire up move action when movement system is ready
+export function UnitPanel({ unitId, onClose }: UnitPanelProps) {
+  const unit = useGameStore((s) =>
+    s.players.flatMap(p => p.units).find(u => u.id === unitId)
+  );
+  const skipUnit = useGameStore((s) => s.skipUnit);
+
+  if (!unit) return null;
 
   const healthPercent = (unit.health / unit.maxHealth) * 100;
   const movementPercent = (unit.movement / unit.maxMovement) * 100;
@@ -19,12 +24,21 @@ export function UnitPanel({ unit, onClose }: UnitPanelProps) {
   };
 
   const handleFortify = () => {
-    // TODO: Implement fortify action
+    useGameStore.setState((state) => {
+      const u = state.players.flatMap(p => p.units).find(u => u.id === unitId);
+      if (u) {
+        u.fortificationTurns = (u.fortificationTurns ?? 0) + 1;
+        u.hasActed = true;
+      }
+    });
   };
 
   const handleSkipTurn = () => {
-    // TODO: Implement skip turn
+    skipUnit(unitId);
   };
+
+  const level = unit.promotions?.level ?? 1;
+  const promotions = unit.promotions?.promotions ?? [];
 
   return (
     <div className="fixed bottom-4 left-4 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl z-40">
@@ -38,7 +52,10 @@ export function UnitPanel({ unit, onClose }: UnitPanelProps) {
               <h3 className="font-semibold text-gray-900 dark:text-gray-100">
                 {formatUnitType(unit.type)}
               </h3>
-              <p className="text-xs text-gray-500">Level 1</p>
+              <p className="text-xs text-gray-500">
+                Level {level}
+                {unit.promotions?.xp !== undefined && ` · ${unit.promotions.xp} XP`}
+              </p>
             </div>
           </div>
           <Button variant="ghost" size="sm" onClick={onClose}>✕</Button>
@@ -76,17 +93,30 @@ export function UnitPanel({ unit, onClose }: UnitPanelProps) {
           <span className="text-gray-600 dark:text-gray-400">Strength</span>
           <span className="text-gray-900 dark:text-gray-100 font-medium">{unit.strength}</span>
         </div>
+
+        {promotions.length > 0 && (
+          <div>
+            <span className="text-xs text-gray-500">Promotions:</span>
+            <div className="flex flex-wrap gap-1 mt-1">
+              {promotions.map((p) => (
+                <span key={p} className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs">
+                  {p}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="p-4 border-t border-gray-200 dark:border-gray-700">
         <div className="grid grid-cols-4 gap-2">
-          <Button variant="secondary" size="sm" onClick={() => {}} title="Attack">
+          <Button variant="secondary" size="sm" onClick={() => {}} title="Attack" disabled={unit.hasActed}>
             ⚔️
           </Button>
-          <Button variant="secondary" size="sm" onClick={handleFortify} title="Fortify">
+          <Button variant="secondary" size="sm" onClick={handleFortify} title="Fortify" disabled={unit.hasActed}>
             🛡️
           </Button>
-          <Button variant="secondary" size="sm" onClick={() => {}} title="Sleep">
+          <Button variant="secondary" size="sm" onClick={() => {}} title="Sleep" disabled={unit.hasActed}>
             💤
           </Button>
           <Button variant="secondary" size="sm" onClick={handleSkipTurn} title="Skip Turn">

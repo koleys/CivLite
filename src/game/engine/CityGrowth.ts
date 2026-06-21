@@ -37,7 +37,7 @@ const TERRAIN_YIELDS: Record<TerrainType, CityYields> = {
 
 const FEATURE_YIELDS: Record<TerrainFeature, Partial<CityYields>> = {
   forest: { production: 1 },
-  hills: {},
+  hills: { production: 1 },
   floodplains: { food: 2 },
   oasis: { food: 3, gold: 1 },
   reefs: { production: 1 },

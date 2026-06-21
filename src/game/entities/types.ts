@@ -94,6 +94,7 @@ export interface Unit {
   hasActed: boolean;
   promotions?: UnitPromotions;
   fortificationTurns?: number;
+  pendingPromotion?: boolean;
 }
 
 export type PlayerId = number;
@@ -115,6 +116,13 @@ export interface Player {
   currentResearch: CurrentResearch | null;
   score: number;
   eraScore: number;
+  eraScoreActions: Record<string, number>;
+  legacyObjectives: Record<string, number>;
+  government: string | null;
+  activePolicies: string[];
+  faith: number;
+  tradeRoutes: unknown[];
+  greatWorks: unknown[];
 }
 
 export type GamePhase = 'menu' | 'setup' | 'playing' | 'paused' | 'ended';
@@ -179,6 +187,7 @@ export interface GameState {
   showTileYields: boolean;
   nextId: number;
   cityStates: CityStateData[];
+  visibility: Record<number, Record<string, 'hidden' | 'seen' | 'visible'>>;
 }
 
 export interface MapData {

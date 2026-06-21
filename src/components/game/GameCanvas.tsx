@@ -4,6 +4,11 @@ import { TileManager } from '@/game/engine/TileManager';
 import { CheatPanel } from './CheatPanel';
 import { TutorialOverlay } from './TutorialOverlay';
 import { TechTreePanel } from './TechTreePanel';
+import { CityPanel } from './CityPanel';
+import { UnitPanel } from './UnitPanel';
+import { PromotionDialog } from './PromotionDialog';
+import { GovernmentPanel } from './GovernmentPanel';
+import { ReligionPanel } from './ReligionPanel';
 import type { TileCoord, MapData, Camera, Tile, Unit, City } from '@/game/entities/types';
 import { preloadImages, getImg } from '@/utils/imageCache';
 import { ASSET_PATHS } from '@/assets/AssetManifest';
@@ -240,6 +245,9 @@ export function GameCanvas() {
   const [contextMenu, setContextMenu] = useState<ContextMenuData | null>(null);
   const [edgePanDir, setEdgePanDir] = useState({ dx: 0, dy: 0 });
   const [showTechPanel, setShowTechPanel] = useState(false);
+  const [showGovPanel, setShowGovPanel] = useState(false);
+  const [showReligionPanel, setShowReligionPanel] = useState(false);
+  const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
   const [mapCursor, setMapCursor] = useState<'crosshair' | 'grab' | 'grabbing'>('crosshair');
   
   const map = useGameStore(selectMap);
@@ -256,6 +264,7 @@ export function GameCanvas() {
   const skipUnit = useGameStore((s) => s.skipUnit);
   const foundCity = useGameStore((s) => s.foundCity);
   const turn = useGameStore((s) => s.turn);
+  const age = useGameStore((s) => s.age);
   const phase = useGameStore((s) => s.phase);
   const aiThinking = useGameStore((s) => s.aiThinking);
   const showTileYields = useGameStore((s) => s.showTileYields);
@@ -264,6 +273,7 @@ export function GameCanvas() {
   const mapSeed = useGameStore(selectSeed);
   const cityStates = useGameStore((s) => s.cityStates);
   const cheatMode = useGameStore((s) => s.cheatMode);
+  const visibility = useGameStore((s) => s.visibility);
   const tutorialActive = useGameStore((s) => s.tutorialActive);
   const toggleCheatMode = useGameStore((s) => s.toggleCheatMode);
   const updateCanvasSize = useGameStore((s) => s.updateCanvasSize);
@@ -376,6 +386,18 @@ export function GameCanvas() {
 
     const player = players.find(p => p.id === 0);
     if (!player) return;
+
+    // Check if clicked tile has a city owned by the human player
+    if (tile.cityId) {
+      const cityObj = player.cities.find(c => c.id === tile.cityId);
+      if (cityObj) {
+        setSelectedCityId(cityObj.id);
+        selectUnit(null);
+        return;
+      }
+    }
+
+    setSelectedCityId(null);
 
     const unitsOnTile = player.units.filter(u => u.x === tile.x && u.y === tile.y);
     if (unitsOnTile.length === 0) { selectUnit(null); return; }
@@ -559,6 +581,13 @@ export function GameCanvas() {
         const tile = map.tiles.get(`${tx},${ty}`);
         if (!tile) continue;
 
+        const humanVis = visibility[0] ?? {};
+        const tileVis = humanVis[`${tx},${ty}`] ?? 'visible';
+        const tileVisible = tileVis === 'visible';
+        const tileSeen = tileVis === 'seen' || tileVisible;
+
+        if (!tileSeen) continue;
+
         const { cx, cy } = tileCenter(tx, ty);
 
         // ── Terrain base (SVG image clipped to hex, or solid colour fallback) ───
@@ -644,6 +673,13 @@ export function GameCanvas() {
             ctx.font = '8px sans-serif';
             ctx.fillText(`Pop ${cityObj.population}`, cx, cy + 8);
           }
+        }
+
+        // ── Fog of war overlay for explored-but-not-visible tiles ─────────
+        if (!tileVisible) {
+          hexPath(ctx, cx, cy, HEX_SIZE);
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+          ctx.fill();
         }
       }
     }
@@ -764,8 +800,19 @@ export function GameCanvas() {
         case 'R':
           if (!e.ctrlKey && !e.metaKey) setShowTechPanel(v => !v);
           break;
+        case 'g':
+        case 'G':
+          if (!e.ctrlKey && !e.metaKey) setShowGovPanel(v => !v);
+          break;
+        case 'p':
+        case 'P':
+          if (!e.ctrlKey && !e.metaKey) setShowReligionPanel(v => !v);
+          break;
         case 'Escape':
           if (showTechPanel) { setShowTechPanel(false); break; }
+          if (showGovPanel) { setShowGovPanel(false); break; }
+          if (showReligionPanel) { setShowReligionPanel(false); break; }
+          setSelectedCityId(null);
           selectUnit(null);
           selectTile(null);
           setContextMenu(null);
@@ -794,7 +841,7 @@ export function GameCanvas() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [endTurn, toggleTileYields, selectUnit, selectTile, panCamera, zoomCamera, toggleCheatMode, showTechPanel]);
+  }, [endTurn, toggleTileYields, selectUnit, selectTile, panCamera, zoomCamera, toggleCheatMode, showTechPanel, showGovPanel, showReligionPanel, setSelectedCityId]);
 
   if (phase !== 'playing') return null;
 
@@ -825,7 +872,7 @@ export function GameCanvas() {
 
       {/* ── Top bar ──────────────────────────────────────────────────────── */}
       <div className="top-bar">
-        <span className="turn-info">Turn {turn} – Antiquity Age</span>
+        <span className="turn-info">Turn {turn} – {age.charAt(0).toUpperCase() + age.slice(1)} Age</span>
         {/* Treasury + science progress inline in top bar */}
         {humanPlayer && (
           <span className="topbar-resources">
@@ -845,7 +892,7 @@ export function GameCanvas() {
           </span>
         )}
         <span className="controls-hint">
-          Arrows: Pan &nbsp;|&nbsp; +/−: Zoom &nbsp;|&nbsp; Space: End Turn &nbsp;|&nbsp; R: Research
+          Arrows: Pan &nbsp;|&nbsp; +/−: Zoom &nbsp;|&nbsp; Space: End Turn &nbsp;|&nbsp; R: Research &nbsp;|&nbsp; G: Gov &nbsp;|&nbsp; P: Faith
         </span>
         <span className="seed-display" title="Map seed — share to replay this map">
           🗺 {formatSeed(mapSeed)}
@@ -855,6 +902,16 @@ export function GameCanvas() {
           onClick={toggleCheatMode}
           title="Toggle Cheat Panel (Ctrl+D)"
         >🛠</button>
+        <button
+          className="topbar-action-btn"
+          onClick={() => setShowGovPanel(true)}
+          title="Government & Policies (G)"
+        >🏛</button>
+        <button
+          className="topbar-action-btn"
+          onClick={() => setShowReligionPanel(true)}
+          title="Religion (P)"
+        >✝</button>
       </div>
 
       {/* ── Always-visible yields panel (top-right) ─────────────────────── */}
@@ -1123,6 +1180,11 @@ export function GameCanvas() {
       {cheatMode && <CheatPanel onClose={toggleCheatMode} />}
       {tutorialActive && <TutorialOverlay />}
       {showTechPanel && <TechTreePanel onClose={() => setShowTechPanel(false)} />}
+      {showGovPanel && <GovernmentPanel onClose={() => setShowGovPanel(false)} />}
+      {showReligionPanel && <ReligionPanel onClose={() => setShowReligionPanel(false)} />}
+      {selectedCityId && <CityPanel cityId={selectedCityId} onClose={() => setSelectedCityId(null)} />}
+      {selectedUnit && <UnitPanel unitId={selectedUnit.id} onClose={() => selectUnit(null)} />}
+      {selectedUnit && <PromotionDialog unitId={selectedUnit.id} />}
 
       <style>{`
         .game-container {
@@ -1163,6 +1225,16 @@ export function GameCanvas() {
         }
         .cheat-toggle-btn:hover { color: #e94560; border-color: #e94560; }
         .cheat-toggle-btn--active { color: #e94560; border-color: #e94560; background: rgba(233,69,96,0.1); }
+        .topbar-action-btn {
+          background: none;
+          border: 1px solid rgba(255,255,255,0.2);
+          border-radius: 5px;
+          padding: 3px 8px;
+          color: #aaa;
+          cursor: pointer;
+          font-size: 1rem;
+        }
+        .topbar-action-btn:hover { color: #e94560; border-color: #e94560; }
         .ai-thinking-indicator {
           font-size: 0.85rem; color: #ffcc44; font-weight: 600;
           animation: ai-pulse 1.2s ease-in-out infinite;

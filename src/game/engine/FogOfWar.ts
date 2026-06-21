@@ -188,13 +188,11 @@ export class FogOfWarSystem {
 
   private getValidNeighbors(x: number, y: number): TileCoord[] {
     const neighbors: TileCoord[] = [];
-    const directions = [
-      [-1, -1], [0, -1], [1, -1],
-      [-1, 0],          [1, 0],
-      [-1, 1],  [0, 1], [1, 1],
-    ];
+    const dirs = (y % 2 === 0)
+      ? [[1, 0], [0, -1], [-1, -1], [-1, 0], [-1, +1], [0, +1]]
+      : [[1, 0], [+1, -1], [0, -1], [-1, 0], [0, +1], [+1, +1]];
 
-    for (const [dx, dy] of directions) {
+    for (const [dx, dy] of dirs) {
       const nx = x + dx;
       const ny = y + dy;
       

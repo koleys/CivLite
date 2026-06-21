@@ -1,4 +1,9 @@
-import type { Tile, TileCoord, MapData, TerrainType, ImprovementType, ResourceType, TerrainFeature } from '@/game/entities/types';
+import type { Tile, TileCoord, MapData, TerrainType, ImprovementType, ResourceType, TerrainFeature, UnitType } from '@/game/entities/types';
+
+const NAVAL_TYPES: ReadonlySet<string> = new Set([
+  'galley', 'caravel', 'caravelle', 'trireme', 'frigate',
+  'battleship', 'submarine', 'galleass', 'ship_of_the_line',
+]);
 
 export interface TileYield {
   food: number;
@@ -22,7 +27,7 @@ const TERRAIN_YIELDS: Record<TerrainType, TileYield> = {
 
 const FEATURE_YIELDS: Record<TerrainFeature, Partial<TileYield>> = {
   forest: { production: 1 },
-  hills: {},
+  hills: { production: 1 },
   floodplains: { food: 2 },
   oasis: { food: 3, gold: 1 },
   reefs: { production: 1 },
@@ -225,6 +230,24 @@ export class TileManager {
 
     return tiles;
   }
+}
+
+export function getMoveCost(_fromTile: Tile, toTile: Tile): number {
+  if (toTile.terrain === 'mountain') return Infinity;
+
+  let cost = 1;
+  if (toTile.feature === 'hills' || toTile.feature === 'forest') cost += 1;
+  if (toTile.improvement === 'road') cost = 0.5;
+  if (toTile.improvement === 'railroad') cost = 0.25;
+  return cost;
+}
+
+export function isPassable(tile: Tile, unitType: UnitType): boolean {
+  if (tile.terrain === 'mountain') return false;
+  if (tile.terrain === 'ocean' || tile.terrain === 'coast') {
+    return NAVAL_TYPES.has(unitType);
+  }
+  return true;
 }
 
 export function createTileManager(map: MapData): TileManager {
